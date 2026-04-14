@@ -13,10 +13,10 @@ Il progetto è organizzato per gruppi: ogni gruppo è responsabile di una o più
 
 | File | Responsabile | Descrizione |
 |---|---|---|
-| `config.php` | — | Connessione PDO al database |
-| `session.php` | — | Avvio e gestione della sessione utente |
+| `config.php` | **Gruppo 1** | Connessione PDO al database |
+| `api.php` | **Gruppo 2** | Api generali |
 | `global.css` | **Gruppo 3** | Foglio di stile globale dell'intera applicazione |
-| `login.php` / `logout.php` | — | Autenticazione utenti |
+| `session.php` | **Gruppo 4** | Avvio e gestione della sessione utente |
 
 ### Struttura per gruppi
 
