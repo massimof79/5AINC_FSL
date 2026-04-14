@@ -1,7 +1,7 @@
-# PCTOConnect — 4AIQ\_FSL
+# PCTOConnect — 5AINC\_FSL
 
 Applicazione web per la gestione delle esperienze di alternanza scuola-lavoro (PCTO).  
-Progetto scolastico della classe **4AIQ**, sviluppato in gruppi collaborativi su un database condiviso.
+Progetto scolastico della classe **5AINC**, sviluppato in gruppi collaborativi su un database condiviso.
 
 ---
 
