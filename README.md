@@ -135,4 +135,4 @@ Le variabili CSS definite in `:root` (colori, spaziatura, tipografia, raggi, omb
 
 ---
 
-*Progetto scolastico — Classe 4AIQ — Anno scolastico 2024/2025*
+*Progetto scolastico — Classe 5AINC — Anno scolastico 2025/2026*
