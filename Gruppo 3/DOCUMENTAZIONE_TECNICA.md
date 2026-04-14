@@ -1,5 +1,5 @@
 # Documentazione tecnica — Gruppo 3
-## Progetto PCTOConnect — 4AIQ\_FSL
+## Progetto PCTOConnect — 5AINC\_FSL
 
 ---
 
@@ -19,7 +19,7 @@
 
 ## 1. Contesto del progetto
 
-Il progetto PCTOConnect è un'applicazione web per la gestione amministrativa delle esperienze PCTO (Percorsi per le Competenze Trasversali e per l'Orientamento), sviluppata dalla classe 4AIQ come esercitazione pratica su architetture web a tre livelli.
+Il progetto PCTOConnect è un'applicazione web per la gestione amministrativa delle esperienze PCTO (Percorsi per le Competenze Trasversali e per l'Orientamento), sviluppata dalla classe 5AINC come esercitazione pratica su architetture web a tre livelli.
 
 La classe è divisa in quattro gruppi, ognuno responsabile di un sottoinsieme delle tabelle del database. Tutti i gruppi condividono lo stesso database, la stessa sessione PHP e lo stesso foglio di stile globale. Il Gruppo 3 ha prodotto:
 
@@ -418,4 +418,4 @@ handleFormSubmit(e)
 
 ---
 
-*Gruppo 3 — 4AIQ — Anno scolastico 2024/2025*
+*Gruppo 3 — 5AINC — Anno scolastico 2025/2026*
