@@ -1,7 +1,7 @@
 /* ============================================================
    PCTO Connect — Global Stylesheet
-   Progetto: 4AIQ_FSL
-   Autore:   Gruppo 3 w/Claude
+   Progetto: 5AINC_FSL
+   Autore:   Gruppo 3 w/Claude Deepseek & ChatGPT
    Versione: 1.0
    ============================================================ */
 
@@ -276,6 +276,7 @@ button, input, select, textarea { font-family: inherit; }
 .btn-info:hover { filter: brightness(1.1); }
 
 .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.75rem; }
+.btn-md { padding: 0.5rem 1rem; font-size: 0.875rem; }
 .btn-lg { padding: 0.7rem 1.5rem; font-size: var(--fs-base); }
 .btn-icon { padding: 0.45rem; border-radius: var(--radius); }
 
@@ -330,6 +331,14 @@ tbody tr:last-child td { border-bottom: none; }
   display: flex;
   gap: 0.4rem;
   flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.td-actions .btn-sm svg {
+  min-width: 18px;
+  min-height: 18px;
+  flex-shrink: 0;
 }
 
 /* Empty state */

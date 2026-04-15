@@ -1,7 +1,7 @@
 /**
  * esperienze.js
  * Gestione CRUD per la tabella ESPERIENZA tramite Fetch API.
- * Progetto: 4AIQ_FSL — Gruppo ESPERIENZA
+ * Progetto: 5AINC_FSL — Gruppo ESPERIENZA
  */
 
 'use strict';
@@ -133,16 +133,27 @@ function renderTable(rows) {
           <td class="text-center">${r.numero_studenti}</td>
           <td>${escHtml(r.nome_tutor_scolastico ?? '—')}</td>
           <td>${escHtml(r.nome_tutor_aziendale  ?? '—')}</td>
-          <td>${escHtml(r.label_disponibilita   ?? '—')}</td>
+          <td>${escHtml(r.data_disponibilita   ?? '—')}</td>
           <td>
             <div class="td-actions">
-              <button class="btn btn-warning btn-sm" title="Modifica"
-                      onclick="apriModal(${r.codice_esperienza})">✏️</button>
-              <button class="btn btn-danger btn-sm" title="Elimina"
-                      onclick="eliminaEsperienza(${r.codice_esperienza})">🗑️</button>
+                <button class="btn btn-warning btn-sm" title="Modifica" onclick="apriModal(${r.codice_esperienza})" style="width: auto; height: auto; padding: 4px 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="open">
+                        <path d="M17 3l4 4L7 21H3v-4L17 3z"/>
+                        <path d="M15 5l4 4"/>
+                    </svg>
+                </button>
+                <button class="btn btn-danger btn-sm" title="Elimina" onclick="eliminaEsperienza(${r.codice_esperienza})" style="width: auto; height: auto; padding: 4px 8px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 7h16"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                        <path d="M5 7l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14"/>
+                        <path d="M9 3h6a2 2 0 0 1 2 2v2H7V5a2 2 0 0 1 2-2z"/>
+                    </svg>
+                </button>
             </div>
-          </td>
-        </tr>
+           </td>
+         </tr>
     `).join('');
 }
 

@@ -1,9 +1,17 @@
+<?php
+session_start();
+if (empty($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Esperienze PCTO — 4AIQ_FSL</title>
+  <title>Esperienze PCTO — 5AINC_FSL</title>
 
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -11,7 +19,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Global CSS -->
-  <link rel="stylesheet" href="global.css" />
+  <link rel="stylesheet" href="../global.css" />
 </head>
 <body>
 
@@ -170,7 +178,7 @@
               <th>Studenti</th>
               <th>Tutor Scolastico</th>
               <th>Tutor Aziendale</th>
-              <th>Disponibilità</th>
+              <th>Data disponibilità</th>
               <th>Azioni</th>
             </tr>
           </thead>
@@ -370,10 +378,10 @@
   });
   observer.observe(modalTitleEl, { childList: true, characterData: true, subtree: true });
 
-  // 3. (Facoltativo) Leggi l'username dalla sessione via PHP inline
-  //    Se il server-side rendering è disponibile, decommentare:
-  // document.getElementById('user-name').textContent  = '<?= htmlspecialchars($_SESSION["username"] ?? "Utente") ?>';
-  // document.getElementById('user-avatar').textContent = '<?= strtoupper(substr($_SESSION["username"] ?? "U", 0, 1)) ?>';
+  // 3. Leggi l'username dalla sessione via PHP inline
+  //    Se il server-side rendering è disponibile:
+  document.getElementById('user-name').textContent  = '<?= htmlspecialchars($_SESSION["username"] ?? "Utente") ?>';
+  document.getElementById('user-avatar').textContent = '<?= strtoupper(substr($_SESSION["username"] ?? "U", 0, 1)) ?>';
 </script>
 
 </body>

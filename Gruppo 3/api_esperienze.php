@@ -2,7 +2,7 @@
 /**
  * api_esperienze.php
  * REST API per la gestione CRUD della tabella ESPERIENZA.
- * Progetto: 4AIQ_FSL — Gruppo ESPERIENZA
+ * Progetto: 5AINC_FSL — Gruppo ESPERIENZA
  *
  * Endpoints:
  *   GET    /api_esperienze.php          → lista tutte le esperienze (con JOIN)
@@ -98,7 +98,7 @@ function handleResource(PDO $pdo, string $resource): never
 
         'disponibilita' => $pdo
             ->query('SELECT codice_disponibilita AS id,
-                            CONCAT(data_inizio, " → ", data_fine) AS label
+                            CONCAT("Periodo: ", periodo_previsto, " - ", descrizione) AS label
                      FROM DISPONIBILITA ORDER BY data_inizio DESC')
             ->fetchAll(PDO::FETCH_ASSOC),
     };
@@ -112,28 +112,48 @@ function handleResource(PDO $pdo, string $resource): never
 
 function listEsperienze(PDO $pdo): never
 {
-    $sql = <<<'SQL'
-        SELECT
-            e.codice_esperienza,
-            e.periodo_effettivo,
-            e.numero_ore_previste,
-            e.numero_ore_svolte,
-            e.numero_studenti,
-            e.codice_docente,
-            e.codice_disponibilita,
-            e.codice_tutor,
-            CONCAT(ts.nome, ' ', ts.cognome)  AS nome_tutor_scolastico,
-            CONCAT(ta.nome, ' ', ta.cognome)  AS nome_tutor_aziendale,
-            CONCAT(d.data_inizio, ' → ', d.data_fine) AS label_disponibilita
-        FROM ESPERIENZA e
-        LEFT JOIN TUTOR_SCOLASTICO ts ON ts.codice_docente        = e.codice_docente
-        LEFT JOIN TUTOR_AZIENDALE  ta ON ta.codice_tutor          = e.codice_tutor
-        LEFT JOIN DISPONIBILITA     d ON d.codice_disponibilita   = e.codice_disponibilita
-        ORDER BY e.codice_esperienza DESC
-    SQL;
-
-    $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-    respond(true, $rows);
+    // Prima verifichiamo se la tabella ESPERIENZA esiste
+    try {
+        $checkTable = $pdo->query("SHOW TABLES LIKE 'ESPERIENZA'");
+        if ($checkTable->rowCount() === 0) {
+            respond(true, [], 'Nessuna tabella ESPERIENZA trovata. Creare prima le tabelle.');
+        }
+        
+        $sql = <<<'SQL'
+            SELECT
+                e.codice_esperienza,
+                e.periodo_effettivo,
+                e.numero_ore_previste,
+                e.numero_ore_svolte,
+                e.numero_studenti,
+                e.codice_docente,
+                e.codice_disponibilita,
+                e.codice_tutor,
+                CONCAT(ts.nome, ' ', ts.cognome) AS nome_tutor_scolastico,
+                CONCAT(ta.nome, ' ', ta.cognome) AS nome_tutor_aziendale,
+                d.periodo_previsto AS data_disponibilita
+            FROM ESPERIENZA e
+            LEFT JOIN TUTOR_SCOLASTICO ts ON ts.codice_docente        = e.codice_docente
+            LEFT JOIN TUTOR_AZIENDALE  ta ON ta.codice_tutor          = e.codice_tutor
+            LEFT JOIN DISPONIBILITA     d ON d.codice_disponibilita   = e.codice_disponibilita
+            ORDER BY e.codice_esperienza ASC /*Modifica tra ASC e DISC per l'ordine nella tabella*/
+        SQL;
+    
+        $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        respond(true, $rows);
+    } catch (PDOException $e) {
+        error_log('[api_esperienze] listEsperienze: ' . $e->getMessage());
+        
+        // Estrai un messaggio più user-friendly
+        $message = 'Errore nel caricamento dei dati.';
+        if (strpos($e->getMessage(), 'Base table or view not found') !== false) {
+            $message = 'Tabelle del database non trovate. Contattare l\'amministratore.';
+        } elseif (strpos($e->getMessage(), 'Unknown column') !== false) {
+            $message = 'Struttura del database incompleta. Verificare le colonne delle tabelle.';
+        }
+        
+        respond(false, null, $message, 500);
+    }
 }
 
 // ════════════════════════════════════════════════════════════
@@ -151,12 +171,8 @@ function getEsperienza(PDO $pdo, int $id): never
             e.numero_studenti,
             e.codice_docente,
             e.codice_disponibilita,
-            e.codice_tutor,
-            CONCAT(ts.nome, ' ', ts.cognome)  AS nome_tutor_scolastico,
-            CONCAT(ta.nome, ' ', ta.cognome)  AS nome_tutor_aziendale
+            e.codice_tutor
         FROM ESPERIENZA e
-        LEFT JOIN TUTOR_SCOLASTICO ts ON ts.codice_docente        = e.codice_docente
-        LEFT JOIN TUTOR_AZIENDALE  ta ON ta.codice_tutor          = e.codice_tutor
         WHERE e.codice_esperienza = :id
     SQL;
 
