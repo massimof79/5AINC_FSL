@@ -1,7 +1,7 @@
-# PCTOConnect — 4AIQ\_FSL
+# PCTOConnect — 5AINC\_FSL
 
 Applicazione web per la gestione delle esperienze di alternanza scuola-lavoro (PCTO).  
-Progetto scolastico della classe **4AIQ**, sviluppato in gruppi collaborativi su un database condiviso.
+Progetto scolastico della classe **5AINC**, sviluppato in gruppi collaborativi su un database condiviso.
 
 ---
 
@@ -13,10 +13,10 @@ Il progetto è organizzato per gruppi: ogni gruppo è responsabile di una o più
 
 | File | Responsabile | Descrizione |
 |---|---|---|
-| `config.php` | — | Connessione PDO al database |
-| `session.php` | — | Avvio e gestione della sessione utente |
+| `config.php` | **Gruppo 1** | Connessione PDO al database |
+| `api.php` | **Gruppo 2** | Api generali |
 | `global.css` | **Gruppo 3** | Foglio di stile globale dell'intera applicazione |
-| `login.php` / `logout.php` | — | Autenticazione utenti |
+| `session.php` | **Gruppo 4** | Avvio e gestione della sessione utente |
 
 ### Struttura per gruppi
 
@@ -135,4 +135,4 @@ Le variabili CSS definite in `:root` (colori, spaziatura, tipografia, raggi, omb
 
 ---
 
-*Progetto scolastico — Classe 4AIQ — Anno scolastico 2024/2025*
+*Progetto scolastico — Classe 5AINC — Anno scolastico 2025/2026*

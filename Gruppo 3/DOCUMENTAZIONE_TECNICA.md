@@ -418,4 +418,4 @@ handleFormSubmit(e)
 
 ---
 
-*Gruppo 3 — 5AINC — Anno scolastico 2024/2025*
+*Gruppo 3 — 5AINC — Anno scolastico 2025/2026*
