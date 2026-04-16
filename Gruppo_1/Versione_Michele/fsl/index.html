@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestione Aziende — FSL Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="aziende.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="header-brand">
+      <span class="brand-icon">◈</span>
+      <span class="brand-name">FSL <span class="brand-accent">Panel</span></span>
+    </div>
+    <nav class="header-nav">
+      <span class="nav-module active">Aziende</span>
+      <span class="nav-sep">/</span>
+      <span class="nav-sub" id="nav-breadcrumb">Elenco</span>
+    </nav>
+    <div class="header-meta">
+      <span class="db-indicator">
+        <span class="dot" id="db-status-dot"></span>
+        <span id="db-status-text">Connessione...</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <main class="app-main">
+
+    <!-- SIDEBAR -->
+    <aside class="app-sidebar">
+      <div class="sidebar-section">
+        <p class="sidebar-label">Operazioni</p>
+        <button class="sidebar-btn active" data-view="list" onclick="showView('list')">
+          <span class="btn-icon">≡</span> Elenco Aziende
+        </button>
+        <button class="sidebar-btn" data-view="create" onclick="showView('create')">
+          <span class="btn-icon">+</span> Nuova Azienda
+        </button>
+      </div>
+      <div class="sidebar-section">
+        <p class="sidebar-label">Ricerca</p>
+        <input type="text" id="search-input" class="sidebar-search" placeholder="Cerca per nome…" oninput="filterTable()" />
+      </div>
+      <div class="sidebar-section sidebar-stats" id="sidebar-stats">
+        <p class="sidebar-label">Statistiche</p>
+        <div class="stat-row"><span>Totale</span><span class="stat-val" id="stat-total">—</span></div>
+        <div class="stat-row"><span>Sedi uniche</span><span class="stat-val" id="stat-cities">—</span></div>
+      </div>
+    </aside>
+
+    <!-- CONTENT AREA -->
+    <section class="app-content">
+
+      <!-- TOAST -->
+      <div class="toast-container" id="toast-container"></div>
+
+      <!-- VIEW: LIST -->
+      <div class="view" id="view-list">
+        <div class="view-header">
+          <h1 class="view-title">Aziende <span class="view-count" id="view-count">—</span></h1>
+          <button class="btn-primary" onclick="showView('create')">+ Aggiungi</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table" id="aziende-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Ragione Sociale</th>
+                <th>P.IVA</th>
+                <th>Sede Legale</th>
+                <th>Sede Operativa</th>
+                <th class="col-actions">Azioni</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <tr class="loading-row">
+                <td colspan="6"><span class="spinner"></span> Caricamento...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VIEW: CREATE -->
+      <div class="view hidden" id="view-create">
+        <div class="view-header">
+          <h1 class="view-title">Nuova Azienda</h1>
+          <button class="btn-ghost" onclick="showView('list')">← Torna all'elenco</button>
+        </div>
+        <div class="form-card">
+          <form id="create-form" onsubmit="handleCreate(event)" novalidate>
+            <div class="form-grid">
+              <div class="form-group full">
+                <label for="c-ragione">Ragione Sociale <span class="req">*</span></label>
+                <input type="text" id="c-ragione" name="ragione_sociale" maxlength="100" required />
+                <span class="field-err" id="err-c-ragione"></span>
+              </div>
+              <div class="form-group">
+                <label for="c-piva">Partita IVA <span class="req">*</span></label>
+                <input type="text" id="c-piva" name="partita_iva" maxlength="20" required pattern="[0-9]{11}" />
+                <span class="field-err" id="err-c-piva"></span>
+              </div>
+              <div class="form-group">
+                <label for="c-sede-legale">Sede Legale <span class="req">*</span></label>
+                <input type="text" id="c-sede-legale" name="sede_legale" maxlength="100" required />
+                <span class="field-err" id="err-c-sede-legale"></span>
+              </div>
+              <div class="form-group">
+                <label for="c-sede-op">Sede Operativa <span class="req">*</span></label>
+                <input type="text" id="c-sede-op" name="sede_operativa" maxlength="100" required />
+                <span class="field-err" id="err-c-sede-op"></span>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Salva Azienda</button>
+              <button type="button" class="btn-ghost" onclick="resetForm('create-form')">Annulla</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- VIEW: EDIT -->
+      <div class="view hidden" id="view-edit">
+        <div class="view-header">
+          <h1 class="view-title">Modifica Azienda <span class="view-id" id="edit-id-badge">#</span></h1>
+          <button class="btn-ghost" onclick="showView('list')">← Torna all'elenco</button>
+        </div>
+        <div class="form-card">
+          <form id="edit-form" onsubmit="handleUpdate(event)" novalidate>
+            <input type="hidden" id="e-id" name="codice_azienda" />
+            <div class="form-grid">
+              <div class="form-group full">
+                <label for="e-ragione">Ragione Sociale <span class="req">*</span></label>
+                <input type="text" id="e-ragione" name="ragione_sociale" maxlength="100" required />
+                <span class="field-err" id="err-e-ragione"></span>
+              </div>
+              <div class="form-group">
+                <label for="e-piva">Partita IVA <span class="req">*</span></label>
+                <input type="text" id="e-piva" name="partita_iva" maxlength="20" required pattern="[0-9]{11}" />
+                <span class="field-err" id="err-e-piva"></span>
+              </div>
+              <div class="form-group">
+                <label for="e-sede-legale">Sede Legale <span class="req">*</span></label>
+                <input type="text" id="e-sede-legale" name="sede_legale" maxlength="100" required />
+                <span class="field-err" id="err-e-sede-legale"></span>
+              </div>
+              <div class="form-group">
+                <label for="e-sede-op">Sede Operativa <span class="req">*</span></label>
+                <input type="text" id="e-sede-op" name="sede_operativa" maxlength="100" required />
+                <span class="field-err" id="err-e-sede-op"></span>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">Aggiorna</button>
+              <button type="button" class="btn-danger" onclick="confirmDelete(document.getElementById('e-id').value)">Elimina</button>
+              <button type="button" class="btn-ghost" onclick="showView('list')">Annulla</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- VIEW: DETAIL -->
+      <div class="view hidden" id="view-detail">
+        <div class="view-header">
+          <h1 class="view-title">Dettaglio Azienda <span class="view-id" id="detail-id-badge">#</span></h1>
+          <div class="header-actions">
+            <button class="btn-primary" id="detail-edit-btn">✎ Modifica</button>
+            <button class="btn-ghost" onclick="showView('list')">← Elenco</button>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-grid">
+            <div class="detail-field">
+              <span class="detail-label">Ragione Sociale</span>
+              <span class="detail-value" id="d-ragione">—</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Partita IVA</span>
+              <span class="detail-value mono" id="d-piva">—</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Sede Legale</span>
+              <span class="detail-value" id="d-sede-legale">—</span>
+            </div>
+            <div class="detail-field">
+              <span class="detail-label">Sede Operativa</span>
+              <span class="detail-value" id="d-sede-op">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- MODAL CONFERMA ELIMINAZIONE -->
+  <div class="modal-overlay hidden" id="delete-modal">
+    <div class="modal-box">
+      <div class="modal-icon">⚠</div>
+      <h2 class="modal-title">Conferma Eliminazione</h2>
+      <p class="modal-body">Stai per eliminare l'azienda <strong id="modal-azienda-name"></strong>.<br/>L'operazione è irreversibile.</p>
+      <div class="modal-actions">
+        <button class="btn-danger" id="confirm-delete-btn">Elimina</button>
+        <button class="btn-ghost" onclick="closeModal()">Annulla</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="aziende.js"></script>
+</body>
+</html>
