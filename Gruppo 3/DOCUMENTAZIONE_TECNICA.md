@@ -8,12 +8,13 @@
 1. [Contesto del progetto](#1-contesto-del-progetto)
 2. [Architettura generale](#2-architettura-generale)
 3. [Sistema di design — global.css](#3-sistema-di-design--globalcss)
-4. [Interfaccia utente — esperienze.html](#4-interfaccia-utente--esperienzhtml)
-5. [Logica client-side — esperienze.js](#5-logica-client-side--esperienzejs)
-6. [API server-side — api_esperienze.php](#6-api-server-side--api_esperienezphp)
-7. [Sicurezza](#7-sicurezza)
-8. [Flusso di una operazione CRUD](#8-flusso-di-una-operazione-crud)
-9. [Scelte progettuali](#9-scelte-progettuali)
+4. [Autenticazione — auth.php, login.php, register.php, logout.php](#4-autenticazione--authphp-loginphp-registerphp-logoutphp)
+5. [Interfaccia utente — esperienze.php](#5-interfaccia-utente--esperienzephp)
+6. [Logica client-side — esperienze.js](#6-logica-client-side--esperienzejs)
+7. [API server-side — api\_esperienze.php](#7-api-server-side--api_esperienezphp)
+8. [Sicurezza](#8-sicurezza)
+9. [Flusso di una operazione CRUD](#9-flusso-di-una-operazione-crud)
+10. [Scelte progettuali](#10-scelte-progettuali)
 
 ---
 
@@ -24,40 +25,47 @@ Il progetto PCTOConnect è un'applicazione web per la gestione amministrativa de
 La classe è divisa in quattro gruppi, ognuno responsabile di un sottoinsieme delle tabelle del database. Tutti i gruppi condividono lo stesso database, la stessa sessione PHP e lo stesso foglio di stile globale. Il Gruppo 3 ha prodotto:
 
 - il sistema di design condiviso (`global.css`)
-- la pagina di gestione delle esperienze PCTO (`esperienze.html`, `esperienze.js`)
+- il modulo di autenticazione centralizzato (`auth.php`, `login.php`, `register.php`, `logout.php`)
+- la pagina PHP di gestione delle esperienze PCTO (`esperienze.php`, `esperienze.js`)
 - la REST API per la tabella `ESPERIENZA` (`api_esperienze.php`)
 
 ---
 
 ## 2. Architettura generale
 
-L'applicazione segue il pattern classico a tre livelli:
+L'applicazione segue il pattern classico a tre livelli, con un layer di autenticazione sessione che precede ogni accesso sia alle pagine che all'API:
 
 ```
 [Browser]
     |
-    | HTTP (JSON)
+    | HTTP (GET/POST — pagine PHP)
     v
-[PHP — api_esperienze.php]
+[auth.php] ←── sessione PHP ($_SESSION)
     |
-    | PDO
+    | se sessione valida
     v
-[MySQL — tabella ESPERIENZA]
+[esperienze.php]  ←→  [esperienze.js]
+                              |
+                              | Fetch API (JSON)
+                              v
+                    [api_esperienze.php]
+                              |
+                              | PDO
+                              v
+                    [MySQL — tabella ESPERIENZA]
 ```
 
-Ogni pagina HTML è indipendente e comunica esclusivamente con la propria API tramite Fetch API. Non esiste un framework front-end: tutto è scritto in JavaScript nativo (ES2020+). Sul lato server, PHP gestisce il routing tramite il metodo HTTP e i parametri GET.
-
-La sessione utente è centralizzata: ogni richiesta all'API viene respinta con HTTP 401 se la sessione non è attiva, e il client reindirizza automaticamente al login.
+Il flusso di autenticazione è separato dal flusso dati: `auth.php` espone funzioni pure usate da tutte le pagine. Le pagine PHP chiamano `requireLoginPage()` e l'API chiama `requireLoginApi()` — stessa logica, risposta diversa (redirect HTML vs JSON 401).
 
 ---
 
 ## 3. Sistema di design — global.css
 
-Il file `global.css` definisce il contratto visivo dell'intera applicazione. Tutti gli altri gruppi lo includono e possono estenderlo senza modificarlo.
+Il file `global.css` definisce il contratto visivo dell'intera applicazione. Tutti i gruppi lo includono con path relativo `../global.css` e possono estenderlo con stili locali senza modificarlo.
 
 ### 3.1 Variabili CSS (custom properties)
 
-Tutte le costanti visive sono dichiarate in `:root`. Questo permette a qualsiasi gruppo di usare i valori corretti senza duplicarli o memorizzarli.
+Tutte le costanti visive sono dichiarate in `:root`.
 
 **Colori brand:**
 
@@ -80,18 +88,25 @@ Tutte le costanti visive sono dichiarate in `:root`. Questo permette a qualsiasi
 | `--text-muted` | Testo secondario, placeholder |
 | `--border` | Bordi di separazione |
 
-**Layout:**
+**UI Tokens aggiuntivi:**
 
-| Variabile | Valore | Uso |
-|---|---|---|
-| `--sidebar-w` | `260px` | Larghezza sidebar fissa |
-| `--topbar-h` | `60px` | Altezza topbar fissa |
-| `--radius` | `8px` | Raggio standard |
-| `--radius-lg` | `14px` | Raggio per card e modal |
+| Variabile | Valore |
+|---|---|
+| `--shadow` | `0 4px 6px rgba(0,0,0,0.08)` |
+| `--shadow-lg` | `0 10px 25px rgba(0,0,0,0.12)` |
+| `--transition` | `0.2s ease` |
+| `--radius` / `--radius-lg` | `8px` / `14px` |
+
+**Tipografia:**
+
+| Variabile | Valore |
+|---|---|
+| `--font-sans` | `'Inter', system-ui, sans-serif` |
+| `--fs-sm` / `--fs-base` / `--fs-lg` / `--fs-xl` | `13px` / `15px` / `18px` / `24px` |
 
 ### 3.2 Layout principale
 
-Il layout usa CSS Flexbox sull'elemento `.app-shell` che occupa l'intera finestra. La sidebar è `position: fixed` a sinistra, la topbar è `position: fixed` in cima, e `.main-content` ha margini che compensano esattamente le dimensioni fisse dei due elementi.
+Il layout usa CSS Flexbox sull'elemento `.app-shell`. La sidebar è `position: fixed` a sinistra, la topbar `position: fixed` in cima, `.main-content` compensa con margini esatti.
 
 ```
 +------------------+-----------------------------+
@@ -103,176 +118,352 @@ Il layout usa CSS Flexbox sull'elemento `.app-shell` che occupa l'intera finestr
 +------------------+-----------------------------+
 ```
 
-Su schermi sotto i 900px la sidebar si trasforma in un pannello a scomparsa: viene spostata fuori dalla viewport con `transform: translateX(-100%)` e riportata con la classe `.is-open` attivata dal pulsante hamburger in JavaScript.
+Su schermi sotto i 900px la sidebar si trasforma in un pannello a scomparsa: viene spostata fuori dalla viewport con `transform: translateX(-100%)` e riportata con la classe `.is-open` attivata dal pulsante hamburger.
 
 ### 3.3 Componenti condivisi
 
-Il file definisce i seguenti componenti pronti all'uso per tutti i gruppi:
+**Pulsanti (`.btn`):** cinque varianti (`btn-primary`, `btn-secondary`, `btn-danger`, `btn-warning`, `btn-info`) con tre dimensioni (`btn-sm`, base, `btn-lg`) e variante icona (`btn-icon`). Tutti hanno transizioni, stato `:focus-visible` con outline e stato `:disabled`.
 
-**Pulsanti (`.btn`):** cinque varianti (`btn-primary`, `btn-secondary`, `btn-danger`, `btn-warning`, `btn-info`) con tre dimensioni (`btn-sm`, base, `btn-lg`) e variante icona (`btn-icon`). Tutti hanno transizioni, stato `:focus-visible` con outline per accessibilità, e stato `:disabled`.
+**Tabelle:** `.table-wrapper` abilita scroll orizzontale su mobile. Intestazioni con sfondo `--primary`, righe con striping alternato e highlight al hover. `.table-empty` per stato vuoto.
 
-**Tabelle:** la classe `.table-wrapper` abilita lo scroll orizzontale su mobile. Le intestazioni usano `--primary` come sfondo. Le righe hanno striping alternato e highlight al passaggio del cursore. La classe `.table-empty` gestisce lo stato vuoto con testo centrato.
+**Form:** `.form-group`, `.form-label`, `.form-control`, `.form-error`. Classe `.required` per asterisco obbligatorio. Classe `.is-invalid` per feedback errore (bordo rosso + box-shadow).
 
-**Form:** `.form-group`, `.form-label`, `.form-control`, `.form-error`. I campi obbligatori mostrano un asterisco rosso tramite la classe `.required`. La classe `.is-invalid` su un controllo aggiunge bordo rosso e box-shadow rossa per il feedback di validazione. I `<select>` hanno `cursor: pointer` e le `<textarea>` sono redimensionabili verticalmente.
+**Modal:** overlay con `opacity` + `visibility` per transizione, `backdrop-filter: blur(3px)`. Il modal scivola verso l'alto con `translateY(20px) → translateY(0)`. Header e footer `position: sticky`.
 
-**Modal:** l'overlay usa `opacity` e `visibility` per la transizione, `backdrop-filter: blur(3px)` per l'effetto sfumato. Il modal stesso scivola verso l'alto con `translateY(20px) → translateY(0)`. Header e footer del modal sono `position: sticky` per restare visibili durante lo scroll del contenuto.
+**Toast notifications:** container in alto a destra. Ogni toast entra da destra con `translateX(30px)` e sparisce nella stessa direzione. Bordo sinistro colorato per tipo (success, danger, warning, info).
 
-**Toast notifications:** il container è posizionato in alto a destra, sopra la topbar. Ogni toast entra da destra con `translateX(30px)` e sparisce nella stessa direzione. I colori del bordo sinistro identificano il tipo (success, danger, warning, info).
+**Badge di stato:** `.badge-status` con modificatori `.pending`, `.approved`, `.rejected`, `.active`.
 
-**Badge di stato:** la classe `.badge-status` con modificatori `.pending`, `.approved`, `.rejected`, `.active` è pensata per visualizzare stati delle candidature, ma può essere usata da qualsiasi gruppo.
-
-**Classi utility:** il file include un set minimale di utility per margini (`mt-1/2/3`, `mb-1/2/3`), testo (`text-muted`, `text-danger`, `text-center`, `fw-bold`) e flex (`flex`, `flex-center`, `flex-wrap`).
+**Utility:** margini (`mt-1/2/3`, `mb-1/2/3`), testo (`text-muted`, `text-danger`, `text-center`, `fw-bold`), flex (`flex`, `flex-center`, `flex-wrap`).
 
 ---
 
-## 4. Interfaccia utente — esperienze.html
+## 4. Autenticazione — auth.php, login.php, register.php, logout.php
 
-### 4.1 Struttura dell'app shell
+### 4.1 auth.php — modulo centralizzato (Gruppo 4)
 
-La pagina segue la struttura definita dal CSS:
+`auth.php` è il contratto condiviso tra tutti i gruppi per la gestione della sessione. Viene incluso con `require_once __DIR__ . '/auth.php'` all'inizio di ogni pagina e dell'API. Avvia la sessione (se non già attiva) e definisce le seguenti funzioni:
+
+| Funzione | Firma | Descrizione |
+|---|---|---|
+| `isLoggedIn()` | `(): bool` | Verifica che `$_SESSION['user_id']` sia non vuoto |
+| `requireLoginPage()` | `(): void` | Redirect a `login.php` se non autenticato |
+| `requireLoginApi()` | `(): void` | Risponde con JSON 401 se non autenticato |
+| `loginUser()` | `(array $user): void` | Rigenera session ID, scrive `user_id` e `username` in sessione |
+| `logoutUser()` | `(): void` | Svuota `$_SESSION`, cancella il cookie, distrugge la sessione |
+| `verifyUserPassword()` | `(string, string): bool` | `password_verify()` con fallback plaintext per dati legacy |
+
+```php
+// Uso tipo in una pagina PHP
+require_once __DIR__ . '/auth.php';
+requireLoginPage();   // redirect automatico se non loggato
+
+// Uso tipo in un'API
+require_once __DIR__ . '/auth.php';
+requireLoginApi();    // risponde {success:false, HTTP 401} se non loggato
+```
+
+La sessione scrive due valori: `$_SESSION['user_id']` (intero) e `$_SESSION['username']` (stringa). Il primo viene usato per verificare l'autenticazione, il secondo per visualizzare il nome utente nella topbar.
+
+### 4.2 login.php
+
+Pagina di accesso. Se la sessione è già attiva, reindirizza immediatamente a `esperienze.php`.
+
+**Flusso POST:**
+1. Legge `username` e `password` dal body del form
+2. Recupera l'utente dalla tabella `utenti` con prepared statement
+3. Chiama `verifyUserPassword($password, $user['password'])`
+4. Se valido: chiama `loginUser($user)` → redirect a `esperienze.php`
+5. Se non valido: mostra messaggio di errore nella pagina
+
+```php
+$stmt = $pdo->prepare(
+    'SELECT ID, username, password FROM utenti WHERE username = :username LIMIT 1'
+);
+$stmt->execute([':username' => $username]);
+$user = $stmt->fetch();
+
+if ($user && verifyUserPassword($password, (string) $user['password'])) {
+    loginUser($user);
+    header('Location: esperienze.php');
+    exit;
+}
+```
+
+La pagina gestisce anche i parametri GET `?logout=1` e `?registered=1` per mostrare messaggi di conferma dopo logout o registrazione completata.
+
+### 4.3 register.php
+
+Pagina di registrazione. Reindirizza a `esperienze.php` se già autenticato.
+
+**Validazione:**
+- Tutti i campi obbligatori (username, password, conferma password)
+- Username: minimo 3 caratteri
+- Password: minimo 6 caratteri
+- Le due password devono coincidere
+- Username non già in uso (query di controllo preventiva)
+
+**Creazione account:**
+
+```php
+$hash = password_hash($password, PASSWORD_DEFAULT);
+$stmt = $pdo->prepare(
+    'INSERT INTO utenti (username, password) VALUES (:username, :password)'
+);
+$stmt->execute([':username' => $username, ':password' => $hash]);
+header('Location: login.php?registered=1');
+```
+
+### 4.4 logout.php
+
+Chiama `logoutUser()` e reindirizza a `login.php?logout=1`. Non produce output HTML.
+
+```php
+require_once __DIR__ . '/auth.php';
+logoutUser();
+header('Location: login.php?logout=1');
+exit;
+```
+
+---
+
+## 5. Interfaccia utente — esperienze.php
+
+La pagina è ora un file PHP (non più HTML statico) per integrare la verifica di sessione e mostrare dati dell'utente autenticato nella topbar.
+
+### 5.1 Verifica sessione e dati utente
+
+Il file inizia con il blocco PHP che verifica la sessione prima di emettere qualsiasi output HTML:
+
+```php
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/auth.php';
+requireLoginPage();
+?>
+```
+
+La topbar mostra l'iniziale e il nome dell'utente prelevati direttamente da `$_SESSION`:
+
+```php
+<div class="avatar">
+  <?= strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1)) ?>
+</div>
+<span><?= htmlspecialchars($_SESSION['username'] ?? 'Utente', ENT_QUOTES, 'UTF-8') ?></span>
+```
+
+### 5.2 Struttura dell'app shell
 
 ```html
 <div class="app-shell">
-  <aside class="sidebar">...</aside>
+  <aside class="sidebar" id="sidebar">...</aside>
   <header class="topbar">...</header>
   <main class="main-content">...</main>
 </div>
 ```
 
-La sidebar contiene tre sezioni di navigazione (Gestione, Studenti, Sistema) con le voci di tutte le pagine del progetto. Questo permette all'utente di navigare tra le sezioni degli altri gruppi senza cambiare l'impostazione grafica. La voce attiva riceve la classe `.active` che aggiunge l'indicatore verde sul bordo sinistro.
+La sidebar contiene sezioni di navigazione (Gestione, Studenti, Sistema) con le voci di tutte le pagine del progetto. La voce attiva riceve la classe `.active`.
 
-La topbar mostra il titolo della sezione corrente, un badge con iniziale e nome dell'utente in sessione, e il link di logout. Il badge utente è predisposto per essere popolato con dati di sessione PHP (commentato nell'HTML, pronto per l'attivazione).
-
-### 4.2 Area contenuto
+### 5.3 Area contenuto
 
 L'area principale include:
-
 - Un `page-header` con titolo e descrizione della sezione
-- Una `stats-grid` (nascosta di default, attivabile via JS) con tre card statistiche: totale esperienze, studenti coinvolti, ore totali svolte
-- Una `card` principale con intestazione (titolo + pulsante "Nuova Esperienza") e la tabella
+- Una `card` con intestazione (titolo + pulsante "＋ Nuova Esperienza") e la tabella
+- Uno spinner (`#table-spinner`) visibile durante il caricamento dati
 
-La tabella ha nove colonne: ID, periodo effettivo, ore previste, ore svolte, numero studenti, tutor scolastico (nome da JOIN), tutor aziendale (nome da JOIN), disponibilità (label da JOIN), azioni (modifica / elimina).
+La tabella ha nove colonne: `#`, periodo effettivo, ore previste, ore svolte, studenti, tutor scolastico (JOIN), tutor aziendale (JOIN), data disponibilità (JOIN), azioni.
 
-### 4.3 Modal
+### 5.4 Modal — struttura del form
 
-Il modal è definito fuori dall'app shell, a livello di `body`. Contiene un form con sei campi:
+Il modal è definito fuori dall'app shell, a livello di `body`. Il `<form>` **avvolge sia `modal-body` che `modal-footer`**, garantendo che il pulsante submit sia sempre fisicamente dentro il form:
 
-- `periodo_effettivo` — campo testo libero
-- `numero_ore_previste` / `numero_ore_svolte` — due numerici affiancati con `.form-row`
-- `numero_studenti` — numerico
-- `codice_docente` — select popolata dinamicamente dall'API
-- `codice_tutor` — select popolata dinamicamente dall'API
-- `codice_disponibilita` — select popolata dinamicamente dall'API
+```html
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-header">...</div>
 
-Il tasto di submit nel footer del modal cambia testo dinamicamente tra "Crea esperienza" e "Salva modifiche" tramite un `MutationObserver` sul titolo del modal.
+    <form id="form-esperienza" novalidate>
+      <div class="modal-body">
+        <!-- tutti i campi input -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="btn-annulla">Annulla</button>
+        <button type="submit" id="btn-submit" class="btn btn-primary">
+          Crea esperienza
+        </button>
+      </div>
+    </form>
 
-### 4.4 Adattamenti responsive in JavaScript
+  </div>
+</div>
+```
 
-Un piccolo blocco `<script>` inline (non nel `.js` principale per separazione dei concern) gestisce:
+> **Nota:** In una versione precedente il `<form>` era solo nel `modal-body` e il pulsante submit nel `modal-footer` usava l'attributo `form="form-esperienza"` per l'associazione cross-element HTML5. Questa struttura causava il mancato firing dell'evento `submit` in alcuni browser/ambienti. La struttura attuale elimina questa dipendenza mettendo il pulsante fisicamente dentro il form.
 
-- La visibilità del pulsante hamburger in base alla larghezza della finestra, con aggiornamento al resize
-- Il toggle della classe `.is-open` sulla sidebar al clic del pulsante
-- Il `MutationObserver` per aggiornare il testo del pulsante submit
+Il form contiene sei campi:
+- `periodo_effettivo` — testo libero
+- `numero_ore_previste` / `numero_ore_svolte` — due numerici (`min="0"`) affiancati con `.form-row`
+- `numero_studenti` — numerico (`min="1"`)
+- `codice_docente` — `<select>` popolata dinamicamente da `?resource=tutor_scolastico`
+- `codice_tutor` — `<select>` popolata dinamicamente da `?resource=tutor_aziendale`
+- `codice_disponibilita` — `<select>` popolata dinamicamente da `?resource=disponibilita`
+
+### 5.5 Script inline — responsive
+
+Un piccolo `<script>` inline (separato da `esperienze.js`) gestisce solo la sidebar mobile:
+
+```js
+function checkMobile() {
+    btnToggle.style.display = window.innerWidth <= 900 ? 'inline-flex' : 'none';
+    if (window.innerWidth > 900) sidebar.classList.remove('is-open');
+}
+btnToggle.addEventListener('click', () => sidebar.classList.toggle('is-open'));
+window.addEventListener('resize', checkMobile);
+```
 
 ---
 
-## 5. Logica client-side — esperienze.js
+## 6. Logica client-side — esperienze.js
 
 Il file è scritto in JavaScript rigoroso (`'use strict'`) senza dipendenze esterne.
 
-### 5.1 Inizializzazione
+### 6.1 Inizializzazione
 
 Tutto parte dall'evento `DOMContentLoaded`. In questo handler vengono:
+1. cachati tutti i riferimenti DOM in variabili di modulo
+2. registrati tutti gli event listener (pulsanti, form submit, chiusura modal, Escape, clic sfondo)
+3. chiamata `loadEsperienze()` per il caricamento iniziale
 
-1. cachati tutti i riferimenti DOM necessari in variabili di modulo
-2. registrati tutti gli event listener (pulsanti, form submit, chiusura modal, tasto Escape, clic sfondo)
-3. chiamata `loadEsperienze()` per il caricamento iniziale dei dati
+Lo stato è gestito da `currentEditId`: `null` = creazione, numero intero = modifica di quell'ID.
 
-Lo stato della modalità corrente (creazione vs modifica) è gestito dalla variabile `currentEditId`: `null` indica creazione, un numero intero indica la modifica di quell'ID.
+### 6.2 Il wrapper apiFetch
 
-### 5.2 Il wrapper apiFetch
+```js
+async function apiFetch(url, options = {}) {
+    const defaults = {
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        credentials: 'same-origin',
+    };
+    const merged = { ...defaults, ...options };
+    if (merged.body && typeof merged.body !== 'string') {
+        merged.body = JSON.stringify(merged.body);
+    }
+    const response = await fetch(url, merged);
+    const json = await response.json();
+    if (!response.ok || !json.success) {
+        throw new ApiError(json.message || `HTTP ${response.status}`, response.status);
+    }
+    return json;
+}
+```
 
-Tutta la comunicazione con il server passa per la funzione `apiFetch(url, options)`, che:
+Centralizza headers, credenziali sessione, serializzazione JSON e gestione errori. Ogni fallimento genera un `ApiError` (classe custom con `status`) catturato nei `try/catch` chiamanti.
 
-- aggiunge automaticamente l'header `Content-Type: application/json`
-- include le credenziali di sessione (`credentials: 'same-origin'`)
-- serializza il body in JSON se non è già una stringa
-- lancia un'eccezione di tipo `ApiError` (classe custom) se la risposta non è `ok` o `success` è `false`
-- restituisce direttamente l'oggetto JSON parsato
+### 6.3 Caricamento e rendering della tabella
 
-Questo centralizza la gestione degli errori HTTP: ogni chiamata che fallisce genera un `ApiError` con il messaggio del server e il codice HTTP, catturato nei `try/catch` delle funzioni chiamanti.
+`loadEsperienze()` mostra lo spinner, chiama `GET /api_esperienze.php`, poi `renderTable(rows)` costruisce la `<tbody>` con `Array.map().join('')`. Ogni stringa passa per `escHtml()`. I campi JOIN con valore `null` mostrano `—` via operatore `??`.
 
-### 5.3 Caricamento e rendering della tabella
+### 6.4 Gestione del modal
 
-`loadEsperienze()` è `async`. Mostra lo spinner, chiama l'API, poi chiama `renderTable(rows)` che costruisce il markup HTML della `<tbody>` con `Array.map().join('')`. Ogni cella testuale passa per la funzione `escHtml()` per prevenire XSS.
+`apriModal(id)` è `async` e gestisce sia creazione che modifica:
 
-Le colonne dei nomi (tutor scolastico, tutor aziendale, disponibilità) usano il valore `?? '—'` per mostrare un trattino quando il JOIN non ha prodotto risultati (record orfano).
+1. imposta `currentEditId` e titolo modal
+2. reset form + pulizia errori
+3. `Promise.all` sui tre endpoint `?resource=` per popolare le select **in parallelo**
+4. se modifica: `GET ?id=N` → `fillForm(data)` precompila i campi con `setField(name, value)`
+5. apre il modal con `.is-open`, focus sul primo input
 
-### 5.4 Gestione del modal
+Le select vengono popolate prima di `fillForm()` in modo che i valori selezionati corrispondano alle opzioni già caricate.
 
-`apriModal(id)` è `async` e gestisce sia la creazione (`id = null`) sia la modifica (`id = numero`). Il flusso è:
+### 6.5 Submit del form
 
-1. imposta `currentEditId` e il titolo del modal
-2. resetta il form e pulisce gli errori
-3. chiama in parallelo (con `Promise.all`) i tre endpoint ausiliari per popolare le select
-4. se è una modifica, carica i dati dell'esperienza e precompila il form con `fillForm(data)`
-5. apre il modal aggiungendo la classe `.is-open`
-6. porta il focus sul primo campo
+```js
+async function handleFormSubmit(e) {
+    e.preventDefault();
+    const editingId = currentEditId;  // snapshot prima di operazioni async
+    const payload = buildPayload();
 
-`chiudiModal()` rimuove la classe `.is-open` e resetta lo stato.
+    // disabilita pulsante per evitare doppi invii
+    btnSubmit.disabled = true;
 
-### 5.5 Submit del form
+    try {
+        const result = editingId
+            ? await apiFetch(`${API_URL}?id=${editingId}`, { method: 'PUT', body: payload })
+            : await apiFetch(API_URL, { method: 'POST', body: payload });
 
-`handleFormSubmit(e)` previene il submit nativo, costruisce il payload con `buildPayload()` (che legge i valori dal form e converte i campi numerici con `Number()`), disabilita il pulsante per evitare doppi invii, e chiama l'API appropriata (POST o PUT) in base a `currentEditId`.
+        showToast('success', 'Operazione completata', result.message);
+        chiudiModal();
+        loadEsperienze();
+    } catch (err) {
+        if (err.status === 422) showToast('danger', 'Dati non validi', err.message, 6000);
+        else if (err.status === 401) { /* redirect login */ }
+        else handleError(err, 'Salvataggio');
+    } finally {
+        btnSubmit.disabled = false;
+    }
+}
+```
 
-In caso di errore HTTP 422 (validazione fallita lato server) mostra il messaggio di errore con un toast. In caso di 401 avvisa che la sessione è scaduta. Negli altri casi usa `handleError()`.
+`buildPayload()` usa `FormData` per leggere i valori del form. I campi numerici vengono convertiti con `Number()`.
 
-### 5.6 Eliminazione
+### 6.6 Eliminazione
 
-`eliminaEsperienza(id)` chiede conferma con `confirm()` nativo prima di procedere. Dopo l'eliminazione ricarica la tabella.
+`eliminaEsperienza(id)` chiede conferma con `confirm()` nativo prima di eseguire `DELETE /api_esperienze.php?id=N`. Ricarica la tabella in caso di successo.
 
-### 5.7 Toast notifications
+### 6.7 Toast notifications
 
-`showToast(type, title, message, duration)` crea un elemento DOM, lo appende al container, e programma la sua rimozione dopo `duration` ms. Il clic sul toast lo chiude anticipatamente. La classe `.toast-hide` attiva l'animazione di uscita; la rimozione dal DOM avviene sull'evento `animationend`.
+`showToast(type, title, message, duration)` crea un elemento DOM, lo appende al container `#toast-container`, e programma la rimozione dopo `duration` ms. Il clic anticipa la chiusura. `.toast-hide` attiva l'animazione di uscita; la rimozione dal DOM avviene su `animationend`.
 
-### 5.8 escHtml — protezione XSS
+### 6.8 escHtml — protezione XSS
 
-La funzione `escHtml(str)` trasforma i caratteri `&`, `<`, `>`, `"`, `'` nelle rispettive entità HTML. Viene applicata a ogni stringa proveniente dal server prima di inserirla nel DOM tramite `innerHTML`. Questo garantisce che dati potenzialmente malevoli non vengano interpretati come markup.
+```js
+function escHtml(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+```
+
+Applicata a ogni stringa proveniente dal server prima di inserirla via `innerHTML`.
 
 ---
 
-## 6. API server-side — api\_esperienze.php
+## 7. API server-side — api\_esperienze.php
 
-### 6.1 Struttura del file
+### 7.1 Struttura del file
 
-Il file segue questo ordine:
+```
+1. require auth.php + config.php
+2. header JSON
+3. helper respond()
+4. requireLoginApi()
+5. router ($method, $id, $resource)
+6. handleResource() — risorse ausiliarie
+7. listEsperienze(), getEsperienza()
+8. createEsperienza(), updateEsperienza(), deleteEsperienza()
+9. parseRequestBody(), validateFields()
+```
 
-1. dichiarazioni e header HTTP
-2. helper `respond()` per tutte le risposte
-3. verifica sessione
-4. inclusione di `config.php` (che espone `$pdo`)
-5. router basato su `$_SERVER['REQUEST_METHOD']` e `$_GET['id']`
-6. funzioni per le risorse ausiliarie
-7. funzioni CRUD
-8. helper `parseRequestBody()` e `validateFields()`
-
-### 6.2 Il router
-
-Il router usa l'istruzione `match` di PHP 8. Se è presente il parametro `?resource=`, viene gestito prima da `handleResource()` che termina sempre con `respond()` → `exit`. Altrimenti si entra nel `match` sul metodo HTTP.
+### 7.2 Il router
 
 ```php
+if ($resource !== null) {
+    handleResource($pdo, $resource);  // termina sempre con exit
+}
+
 match ($method) {
     'GET'    => $id ? getEsperienza($pdo, $id) : listEsperienze($pdo),
     'POST'   => createEsperienza($pdo),
-    'PUT'    => $id ? updateEsperienza($pdo, $id) : respond(false, ...),
-    'DELETE' => $id ? deleteEsperienza($pdo, $id) : respond(false, ...),
+    'PUT'    => $id ? updateEsperienza($pdo, $id) : respond(false, null, 'ID mancante.', 400),
+    'DELETE' => $id ? deleteEsperienza($pdo, $id) : respond(false, null, 'ID mancante.', 400),
     default  => respond(false, null, 'Metodo non supportato.', 405),
 };
 ```
 
-### 6.3 Formato della risposta
-
-Ogni risposta ha sempre la stessa struttura:
+### 7.3 Formato della risposta
 
 ```json
 {
@@ -282,119 +473,165 @@ Ogni risposta ha sempre la stessa struttura:
 }
 ```
 
-Il codice HTTP è coerente con lo stato: 200 per letture, 201 per creazione, 400 per richieste malformate, 401 per sessione assente, 404 per record non trovati, 405 per metodi non supportati, 422 per errori di validazione, 500 per errori interni.
+Codici HTTP coerenti: 200 letture, 201 creazione, 400 richiesta malformata, 401 sessione assente, 404 record non trovato, 405 metodo non supportato, 422 validazione fallita, 500 errore interno.
 
-### 6.4 listEsperienze — query con JOIN
-
-La query di lista usa tre LEFT JOIN per recuperare i nomi dei tutor e la label della disponibilità in un'unica chiamata al database, evitando query multiple o logica di ricomposizione nel client.
+### 7.4 listEsperienze — query con JOIN
 
 ```sql
 SELECT
-    e.*,
+    e.codice_esperienza,
+    e.periodo_effettivo,
+    e.numero_ore_previste,
+    e.numero_ore_svolte,
+    e.numero_studenti,
+    e.codice_docente,
+    e.codice_disponibilita,
+    e.codice_tutor,
     CONCAT(ts.nome, ' ', ts.cognome) AS nome_tutor_scolastico,
     CONCAT(ta.nome, ' ', ta.cognome) AS nome_tutor_aziendale,
-    CONCAT(d.data_inizio, ' → ', d.data_fine) AS label_disponibilita
+    d.periodo_previsto AS data_disponibilita
 FROM ESPERIENZA e
-LEFT JOIN TUTOR_SCOLASTICO ts ON ts.codice_docente = e.codice_docente
-LEFT JOIN TUTOR_AZIENDALE  ta ON ta.codice_tutor   = e.codice_tutor
+LEFT JOIN TUTOR_SCOLASTICO ts ON ts.codice_docente      = e.codice_docente
+LEFT JOIN TUTOR_AZIENDALE  ta ON ta.codice_tutor        = e.codice_tutor
 LEFT JOIN DISPONIBILITA     d ON d.codice_disponibilita = e.codice_disponibilita
-ORDER BY e.codice_esperienza DESC
+ORDER BY e.codice_esperienza ASC
 ```
 
-`LEFT JOIN` (invece di `INNER JOIN`) garantisce che anche le esperienze con FK orfane vengano restituite, mostrando `null` nelle colonne derivate (il client le sostituisce con `—`).
+`LEFT JOIN` garantisce che esperienze con FK orfane vengano comunque restituite (il client mostra `—`). `d.periodo_previsto` è la colonna corretta della tabella `DISPONIBILITA` (non `data_inizio`/`data_fine`).
 
-### 6.5 Validazione lato server (validateFields)
+La funzione include un check preventivo `SHOW TABLES LIKE 'ESPERIENZA'` e gestisce selettivamente i messaggi di errore per `PDOException` (`Base table or view not found`, `Unknown column`) senza esporre il messaggio interno al client.
 
-La funzione `validateFields()` controlla che tutti i campi obbligatori siano presenti e corretti. I valori numerici vengono castati esplicitamente con `(int)`. Se ci sono errori, risponde immediatamente con HTTP 422 e un array di messaggi di errore nel campo `data.errors`.
+### 7.5 Risorse ausiliarie — handleResource
 
-Questa validazione è separata da quella client-side (che è solo per UX): la validazione server-side è quella che garantisce l'integrità dei dati.
+I tre endpoint `?resource=tutor_scolastico|tutor_aziendale|disponibilita` restituiscono array `[{id, label}]` per popolare le select del form. La lista `$allowed` viene verificata prima di eseguire qualsiasi query.
 
-### 6.6 Risorse ausiliarie
+```php
+'disponibilita' => $pdo->query(
+    'SELECT codice_disponibilita AS id,
+            CONCAT("Periodo: ", periodo_previsto, " - ", descrizione) AS label
+     FROM DISPONIBILITA ORDER BY periodo_previsto DESC'
+)->fetchAll(PDO::FETCH_ASSOC),
+```
 
-I tre endpoint `?resource=tutor_scolastico`, `?resource=tutor_aziendale`, `?resource=disponibilita` restituiscono array nella forma `[{id, label}]`, standardizzata per semplificare la funzione `populateSelect()` nel client. La lista delle risorse permesse è un array `$allowed` che viene verificato prima di eseguire qualsiasi query.
+### 7.6 Validazione lato server — validateFields
+
+```php
+if ($periodo === '')                              $errors[] = 'periodo_effettivo è obbligatorio.';
+if ($orePreviste === null || $orePreviste < 0)   $errors[] = 'numero_ore_previste non valido.';
+if ($oreSvolte   === null || $oreSvolte   < 0)   $errors[] = 'numero_ore_svolte non valido.';
+if ($studenti    === null || $studenti    < 1)   $errors[] = 'numero_studenti non valido.';
+if (!$docente)                                   $errors[] = 'codice_docente è obbligatorio.';
+if (!$disponibilita)                             $errors[] = 'codice_disponibilita è obbligatorio.';
+if (!$tutor)                                     $errors[] = 'codice_tutor è obbligatorio.';
+```
+
+Il check `$studenti < 1` (non `< 0`) rispecchia il vincolo `CHECK (numero_studenti > 0)` del database. In caso di errori, risponde con HTTP 422 e array `data.errors`.
 
 ---
 
-## 7. Sicurezza
+## 8. Sicurezza
 
-### Autenticazione
+### Autenticazione e sessione
 
-Ogni richiesta all'API verifica `$_SESSION['user_id']`. Se assente, risponde con 401 prima di qualsiasi altra operazione. Il client intercetta il 401 e reindirizza al login dopo tre secondi.
+Ogni richiesta a pagine PHP chiama `requireLoginPage()` (redirect) o `requireLoginApi()` (JSON 401) prima di qualsiasi operazione. Il client intercetta il 401 e reindirizza al login dopo tre secondi.
+
+`loginUser()` chiama `session_regenerate_id(true)` per prevenire session fixation. `logoutUser()` svuota `$_SESSION`, cancella il cookie di sessione e chiama `session_destroy()`.
+
+### Password
+
+Le password sono memorizzate con `password_hash($password, PASSWORD_DEFAULT)` (bcrypt). La verifica usa `password_verify()`. È presente un fallback `hash_equals()` per dati legacy in plaintext, da migrare.
 
 ### SQL Injection
 
-Tutte le query che accettano input esterno usano PDO prepared statements con parametri nominali (`:id`, `:periodo`, ecc.). Nessuna query è costruita per concatenazione di stringhe.
+Tutte le query che accettano input esterno usano PDO prepared statements con parametri nominali. Nessuna query è costruita per concatenazione di stringhe.
 
 ### XSS
 
-Sul client, ogni valore proveniente dall'API viene passato per `escHtml()` prima di essere inserito nel DOM via `innerHTML`. I valori inseriti tramite `.value` o `.textContent` sono nativamente sicuri.
+Sul client, ogni valore dal server passa per `escHtml()` prima di `innerHTML`. I valori assegnati a `.value` o `.textContent` sono nativamente sicuri. Lato server, i valori PHP in output HTML usano `htmlspecialchars(..., ENT_QUOTES, 'UTF-8')`.
 
 ### Enumerazione risorse
 
-La funzione `handleResource()` verifica che il parametro `resource` appartenga a un insieme esplicito di valori permessi. Valori non in lista producono HTTP 400 senza eseguire query.
+`handleResource()` verifica che il parametro `resource` appartenga all'array `$allowed`. Valori non in lista producono HTTP 400 senza query.
 
 ### Informazioni di errore
 
-In caso di `PDOException`, viene eseguito `error_log()` ma il messaggio dell'eccezione non viene esposto al client. Il client riceve solo "Errore del database. Riprova più tardi."
+In caso di `PDOException`, viene eseguito `error_log()` ma il messaggio interno non viene esposto al client. Il client riceve solo messaggi generici.
 
 ---
 
-## 8. Flusso di una operazione CRUD
+## 9. Flusso di una operazione CRUD
+
+### Login
+
+```
+Utente accede a login.php
+    |
+    +-- se sessione attiva → redirect esperienze.php
+    |
+Utente compila form e invia POST
+    |
+    +-- SELECT utente per username (prepared statement)
+    +-- verifyUserPassword()
+    |       se valido → loginUser() → session_regenerate_id
+    |                              → $_SESSION['user_id'], ['username']
+    |                              → redirect esperienze.php
+    |       se non valido → errore nella pagina
+```
 
 ### Creazione di una nuova esperienza
 
 ```
-Utente clicca "+ Nuova Esperienza"
+Utente clicca "＋ Nuova Esperienza"
     |
     v
 apriModal(null)
     |
-    +-- populateSelect x3 [GET ?resource=...]
-    |       Server risponde con liste {id, label}
-    |       Le <select> vengono popolate
+    +-- Promise.all: populateSelect x3 [GET ?resource=...]
+    |       Server risponde con array {id, label}
+    |       <select> popolate
     |
-    +-- modal si apre, focus sul primo campo
+    +-- modal aperto, focus su primo input
     |
 Utente compila il form e clicca "Crea esperienza"
     |
     v
-handleFormSubmit(e)
+handleFormSubmit(e) → e.preventDefault()
     |
-    +-- buildPayload() legge i valori del form
-    |
-    +-- apiFetch(API_URL, {method: 'POST', body: payload})
-    |       [POST /api_esperienze.php]
-    |       Server: parseRequestBody() → validateFields() → INSERT
-    |       Risposta: {success: true, data: {codice_esperienza: N}, ...} HTTP 201
+    +-- buildPayload() legge FormData
+    +-- apiFetch(API_URL, { method: 'POST', body: payload })
+    |       requireLoginApi() → sessione OK
+    |       parseRequestBody() → json_decode(php://input)
+    |       validateFields() → tutti i campi validi
+    |       INSERT INTO ESPERIENZA ...
+    |       Risposta: { success: true, data: { codice_esperienza: N } } HTTP 201
     |
     +-- showToast('success', ...)
     +-- chiudiModal()
-    +-- loadEsperienze()  ← ricarica la tabella aggiornata
+    +-- loadEsperienze()  ← ricarica tabella aggiornata
 ```
 
 ### Modifica di un'esperienza esistente
 
 ```
-Utente clicca il pulsante modifica su una riga
+Utente clicca pulsante modifica su una riga
     |
     v
 apriModal(id)
     |
-    +-- populateSelect x3 [GET ?resource=...]
-    |
+    +-- Promise.all: populateSelect x3
     +-- apiFetch(API_URL?id=N) [GET singolo]
-    |       Server: SELECT con JOIN → risposta JSON
+    |       SELECT ... FROM ESPERIENZA WHERE codice_esperienza = :id
     |
-    +-- fillForm(data) precompila tutti i campi
-    +-- modal si apre
+    +-- fillForm(data) → setField() per ogni campo
+    +-- modal aperto
     |
-Utente modifica e salva
+Utente modifica e clicca "Salva modifiche"
     |
     v
 handleFormSubmit(e)
     |
-    +-- apiFetch(API_URL?id=N, {method: 'PUT', body: payload})
-    |       Server: verifica esistenza → validateFields() → UPDATE
+    +-- apiFetch(API_URL?id=N, { method: 'PUT', body: payload })
+    |       verifica esistenza record → validateFields() → UPDATE
     |       Risposta: HTTP 200
     |
     +-- showToast, chiudiModal, loadEsperienze
@@ -402,19 +639,23 @@ handleFormSubmit(e)
 
 ---
 
-## 9. Scelte progettuali
+## 10. Scelte progettuali
 
-**Nessun framework front-end.** La scelta di usare JavaScript nativo permette a tutta la classe di leggere e capire il codice senza conoscere Vue, React o simili. Il costo è una maggiore verbosità, ma il guadagno in chiarezza è significativo per un progetto didattico.
+**auth.php come contratto condiviso.** Centralizzare tutta la logica di sessione in un unico file evita duplicazione e garantisce che tutti i gruppi usino gli stessi meccanismi (session_regenerate_id, struttura di $_SESSION, verifica password). Modificare il comportamento della sessione richiede un solo punto di intervento.
 
-**Separazione dei file per gruppo.** Ogni gruppo ha la propria API PHP indipendente. Questo evita conflitti di merge e rende il codice di ciascun gruppo autonomamente leggibile e testabile.
+**Nessun framework front-end.** JavaScript nativo (ES2020+) rende il codice leggibile a tutta la classe senza conoscenza di framework. Il costo è maggiore verbosità, il guadagno è trasparenza per un progetto didattico.
 
-**global.css come contratto condiviso.** Invece di lasciare ogni gruppo libero di scrivere stili incompatibili, il Gruppo 3 ha definito un sistema di design con variabili CSS. Tutti i componenti riutilizzabili (card, tabelle, form, modal, toast) sono centralizzati. I singoli gruppi estendono, non sovrascrivono.
+**Form avvolge modal-body e modal-footer.** Il pulsante submit è fisicamente dentro il `<form>`. L'alternativa (attributo HTML5 `form="id"` su un pulsante esterno al form) è valida ma causa comportamenti inattesi in certi browser quando il form non è nel DOM attivo — la struttura avvolgente elimina la dipendenza.
 
-**Risposta JSON strutturata uniforme.** Il formato `{success, message, data}` è uguale per tutte le API di tutti i gruppi. Questo rende più semplice scrivere funzioni client riutilizzabili e interpretare le risposte in modo uniforme.
+**Promise.all per le select.** Le tre select del modal vengono popolate in parallelo, non in sequenza. Tre richieste seriali aggiungerebbero latenza visibile all'apertura del modal senza nessun beneficio.
 
-**LEFT JOIN invece di query multiple.** La lista delle esperienze recupera i dati correlati (nomi tutor, label disponibilità) in una singola query con JOIN, invece di fare N query aggiuntive dopo aver ottenuto la lista. Questo riduce il numero di round-trip al database.
+**Snapshot di currentEditId nel submit handler.** `handleFormSubmit` cattura `currentEditId` in una variabile locale prima di operazioni async. `chiudiModal()` resetta `currentEditId` a `null` — usare il valore originale nel blocco `finally` (per il testo del pulsante) richiederebbe lo snapshot, altrimenti il testo mostrerebbe sempre "Crea esperienza" anche dopo una modifica.
 
-**Validazione duale.** La validazione avviene sia nel client (per UX immediata) che nel server (per integrità dei dati). Le due validazioni sono indipendenti: il client non si fida della propria validazione per decidere se inviare la richiesta, e il server non si fida del client per decidere se accettare i dati.
+**global.css come contratto visivo.** Invece di lasciare ogni gruppo libero di scrivere stili incompatibili, il Gruppo 3 definisce il sistema di design con variabili CSS. I componenti riutilizzabili (card, tabelle, form, modal, toast) sono centralizzati. I gruppi estendono, non sovrascrivono.
+
+**LEFT JOIN invece di query multiple.** La lista esperienze recupera nomi tutor e label disponibilità in un'unica query, riducendo i round-trip al database.
+
+**Validazione duale.** Client per UX immediata, server per integrità dei dati. Le due validazioni sono indipendenti e il server non si fida del client.
 
 ---
 
