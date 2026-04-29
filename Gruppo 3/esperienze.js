@@ -10,48 +10,41 @@
 const API_URL = './api_esperienze.php';
 
 // ── Stato locale ──────────────────────────────────────────────
-let currentEditId = null;   // null = modalità creazione, number = modalità modifica
+let currentEditId = null;   // null = creazione, number = modifica
 
-// ── Riferimenti DOM (popolati in DOMContentLoaded) ───────────
+// ── Riferimenti DOM ───────────────────────────────────────────
 let tableBody, modalOverlay, modalTitle, formEsperienza,
-    btnNuova, btnChiudiModal, btnAnnulla, spinnerEl;
+    btnNuova, btnChiudiModal, btnAnnulla, spinnerEl, btnSubmit;
 
 // ════════════════════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════════════════════
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Cache DOM
-    tableBody       = document.getElementById('esperienze-tbody');
-    modalOverlay    = document.getElementById('modal-overlay');
-    modalTitle      = document.getElementById('modal-title');
-    formEsperienza  = document.getElementById('form-esperienza');
-    btnNuova        = document.getElementById('btn-nuova');
-    btnChiudiModal  = document.getElementById('btn-chiudi-modal');
-    btnAnnulla      = document.getElementById('btn-annulla');
-    spinnerEl       = document.getElementById('table-spinner');
+    tableBody      = document.getElementById('esperienze-tbody');
+    modalOverlay   = document.getElementById('modal-overlay');
+    modalTitle     = document.getElementById('modal-title');
+    formEsperienza = document.getElementById('form-esperienza');
+    btnNuova       = document.getElementById('btn-nuova');
+    btnChiudiModal = document.getElementById('btn-chiudi-modal');
+    btnAnnulla     = document.getElementById('btn-annulla');
+    spinnerEl      = document.getElementById('table-spinner');
+    btnSubmit      = document.getElementById('btn-submit');
 
-    // Listener apertura modal (nuova esperienza)
     btnNuova.addEventListener('click', () => apriModal(null));
-
-    // Listener chiusura modal
     btnChiudiModal.addEventListener('click', chiudiModal);
     btnAnnulla.addEventListener('click', chiudiModal);
 
-    // Chiudi cliccando lo sfondo
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) chiudiModal();
     });
 
-    // Chiudi con Escape
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') chiudiModal();
     });
 
-    // Submit del form
     formEsperienza.addEventListener('submit', handleFormSubmit);
 
-    // Caricamento iniziale
     loadEsperienze();
 });
 
@@ -59,12 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
 //  FETCH HELPERS
 // ════════════════════════════════════════════════════════════
 
-/**
- * Wrapper attorno a fetch che gestisce sempre JSON e gli errori HTTP.
- * @param {string} url
- * @param {RequestInit} options
- * @returns {Promise<{success: boolean, data: any, message: string}>}
- */
 async function apiFetch(url, options = {}) {
     const defaults = {
         headers: { 'Content-Type': 'application/json; charset=utf-8' },
@@ -78,7 +65,7 @@ async function apiFetch(url, options = {}) {
     const response = await fetch(url, merged);
     const json = await response.json();
 
-    if (!response.ok && !json.success) {
+    if (!response.ok || !json.success) {
         throw new ApiError(json.message || `HTTP ${response.status}`, response.status);
     }
     return json;
@@ -133,27 +120,33 @@ function renderTable(rows) {
           <td class="text-center">${r.numero_studenti}</td>
           <td>${escHtml(r.nome_tutor_scolastico ?? '—')}</td>
           <td>${escHtml(r.nome_tutor_aziendale  ?? '—')}</td>
-          <td>${escHtml(r.data_disponibilita   ?? '—')}</td>
+          <td>${escHtml(r.data_disponibilita    ?? '—')}</td>
           <td>
             <div class="td-actions">
-                <button class="btn btn-warning btn-sm" title="Modifica" onclick="apriModal(${r.codice_esperienza})" style="width: auto; height: auto; padding: 4px 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="open">
-                        <path d="M17 3l4 4L7 21H3v-4L17 3z"/>
-                        <path d="M15 5l4 4"/>
-                    </svg>
-                </button>
-                <button class="btn btn-danger btn-sm" title="Elimina" onclick="eliminaEsperienza(${r.codice_esperienza})" style="width: auto; height: auto; padding: 4px 8px;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 7h16"/>
-                        <path d="M10 11v6"/>
-                        <path d="M14 11v6"/>
-                        <path d="M5 7l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14"/>
-                        <path d="M9 3h6a2 2 0 0 1 2 2v2H7V5a2 2 0 0 1 2-2z"/>
-                    </svg>
-                </button>
+              <button class="btn btn-warning btn-sm" title="Modifica"
+                      onclick="apriModal(${r.codice_esperienza})"
+                      style="width:auto;height:auto;padding:4px 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 3l4 4L7 21H3v-4L17 3z"/>
+                  <path d="M15 5l4 4"/>
+                </svg>
+              </button>
+              <button class="btn btn-danger btn-sm" title="Elimina"
+                      onclick="eliminaEsperienza(${r.codice_esperienza})"
+                      style="width:auto;height:auto;padding:4px 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 7h16"/>
+                  <path d="M10 11v6"/>
+                  <path d="M14 11v6"/>
+                  <path d="M5 7l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14"/>
+                  <path d="M9 3h6a2 2 0 0 1 2 2v2H7V5a2 2 0 0 1 2-2z"/>
+                </svg>
+              </button>
             </div>
-           </td>
-         </tr>
+          </td>
+        </tr>
     `).join('');
 }
 
@@ -169,17 +162,21 @@ function setTableLoading(loading) {
 async function apriModal(id) {
     currentEditId = id;
     modalTitle.textContent = id ? `Modifica Esperienza #${id}` : 'Nuova Esperienza';
+    aggiornaTestoBottone(id);
+
+    // Reset PRIMA di popolare le select, così il form è pulito
     formEsperienza.reset();
     clearFormErrors();
 
-    // Popola le <select> con i dati dal server
+    // Popola le tre select in parallelo
     await Promise.all([
         populateSelect('sel-docente',       `${API_URL}?resource=tutor_scolastico`),
         populateSelect('sel-disponibilita', `${API_URL}?resource=disponibilita`),
         populateSelect('sel-tutor',         `${API_URL}?resource=tutor_aziendale`),
     ]);
 
-    // Se è una modifica, precompila il form
+    // Se è modifica, carica i dati e precompila il form
+    // Fatto DOPO il popolamento delle select, così i valori vengono selezionati correttamente
     if (id) {
         try {
             const { data } = await apiFetch(`${API_URL}?id=${id}`);
@@ -191,15 +188,19 @@ async function apriModal(id) {
     }
 
     modalOverlay.classList.add('is-open');
-    // Focus sul primo campo
-    formEsperienza.querySelector('.form-control')?.focus();
+    const primoInput = formEsperienza.querySelector('input.form-control');
+    if (primoInput) primoInput.focus();
 }
 
 function chiudiModal() {
     modalOverlay.classList.remove('is-open');
     currentEditId = null;
-    formEsperienza.reset();
     clearFormErrors();
+}
+
+function aggiornaTestoBottone(id) {
+    if (!btnSubmit) return;
+    btnSubmit.textContent = id ? 'Salva modifiche' : 'Crea esperienza';
 }
 
 // ════════════════════════════════════════════════════════════
@@ -210,16 +211,21 @@ async function handleFormSubmit(e) {
     e.preventDefault();
     clearFormErrors();
 
-    const payload = buildPayload();
+    // Snapshot dell'id PRIMA di operazioni asincrone:
+    // chiudiModal() resetta currentEditId a null, quindi lo snapshot
+    // serve per sapere in finally se stavamo creando o modificando.
+    const editingId = currentEditId;
+    const payload   = buildPayload();
 
-    const btnSubmit = formEsperienza.querySelector('[type="submit"]');
-    btnSubmit.disabled = true;
-    btnSubmit.textContent = currentEditId ? 'Salvataggio…' : 'Creazione…';
+    if (btnSubmit) {
+        btnSubmit.disabled    = true;
+        btnSubmit.textContent = editingId ? 'Salvataggio…' : 'Creazione…';
+    }
 
     try {
         let result;
-        if (currentEditId) {
-            result = await apiFetch(`${API_URL}?id=${currentEditId}`, {
+        if (editingId) {
+            result = await apiFetch(`${API_URL}?id=${editingId}`, {
                 method: 'PUT',
                 body: payload,
             });
@@ -236,16 +242,19 @@ async function handleFormSubmit(e) {
 
     } catch (err) {
         if (err.status === 422) {
-            // Errori di validazione
-            showToast('danger', 'Dati non validi', err.message);
+            showToast('danger', 'Dati non validi', err.message, 6000);
         } else if (err.status === 401) {
-            showToast('danger', 'Sessione scaduta', 'Effettua di nuovo il login.');
+            showToast('danger', 'Sessione scaduta', 'Verrai reindirizzato al login…', 3000);
+            setTimeout(() => window.location.href = 'login.php', 3000);
         } else {
             handleError(err, 'Salvataggio');
         }
     } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = currentEditId ? 'Salva modifiche' : 'Crea esperienza';
+        // Usa editingId (snapshot) non currentEditId (già resettato da chiudiModal)
+        if (btnSubmit) {
+            btnSubmit.disabled    = false;
+            btnSubmit.textContent = editingId ? 'Salva modifiche' : 'Crea esperienza';
+        }
     }
 }
 
@@ -270,45 +279,58 @@ async function eliminaEsperienza(id) {
 //  UTILITY — Form helpers
 // ════════════════════════════════════════════════════════════
 
-/** Raccoglie i valori del form e li trasforma in payload JSON. */
 function buildPayload() {
     const fd = new FormData(formEsperienza);
+
+    const get    = (k) => fd.get(k);
+    const getNum = (k) => { const v = fd.get(k); return (v !== null && v !== '') ? Number(v) : null; };
+
     return {
-        periodo_effettivo:    fd.get('periodo_effettivo'),
-        numero_ore_previste:  Number(fd.get('numero_ore_previste')),
-        numero_ore_svolte:    Number(fd.get('numero_ore_svolte')),
-        numero_studenti:      Number(fd.get('numero_studenti')),
-        codice_docente:       Number(fd.get('codice_docente')),
-        codice_disponibilita: Number(fd.get('codice_disponibilita')),
-        codice_tutor:         Number(fd.get('codice_tutor')),
+        periodo_effettivo:    (get('periodo_effettivo') || '').trim(),
+        numero_ore_previste:  getNum('numero_ore_previste'),
+        numero_ore_svolte:    getNum('numero_ore_svolte'),
+        numero_studenti:      getNum('numero_studenti'),
+        codice_docente:       getNum('codice_docente'),
+        codice_disponibilita: getNum('codice_disponibilita'),
+        codice_tutor:         getNum('codice_tutor'),
     };
 }
 
-/** Precompila il form con i dati di una esperienza esistente. */
 function fillForm(data) {
-    formEsperienza.elements['periodo_effettivo'].value    = data.periodo_effettivo    ?? '';
-    formEsperienza.elements['numero_ore_previste'].value  = data.numero_ore_previste  ?? '';
-    formEsperienza.elements['numero_ore_svolte'].value    = data.numero_ore_svolte    ?? '';
-    formEsperienza.elements['numero_studenti'].value      = data.numero_studenti      ?? '';
-    formEsperienza.elements['codice_docente'].value       = data.codice_docente       ?? '';
-    formEsperienza.elements['codice_disponibilita'].value = data.codice_disponibilita ?? '';
-    formEsperienza.elements['codice_tutor'].value         = data.codice_tutor         ?? '';
+    setField('periodo_effettivo',    data.periodo_effettivo);
+    setField('numero_ore_previste',  data.numero_ore_previste);
+    setField('numero_ore_svolte',    data.numero_ore_svolte);
+    setField('numero_studenti',      data.numero_studenti);
+    setField('codice_docente',       data.codice_docente);
+    setField('codice_disponibilita', data.codice_disponibilita);
+    setField('codice_tutor',         data.codice_tutor);
 }
 
-/** Popola un elemento <select> con opzioni caricate dall'API. */
+function setField(name, value) {
+    const el = formEsperienza.elements[name];
+    if (el && value !== undefined && value !== null) {
+        el.value = value;
+    }
+}
+
 async function populateSelect(selectId, url) {
     const sel = document.getElementById(selectId);
     if (!sel) return;
 
     sel.innerHTML = '<option value="">— Caricamento… —</option>';
+    sel.disabled  = true;
+
     try {
         const { data } = await apiFetch(url);
-        sel.innerHTML = '<option value="">— Seleziona —</option>' +
-            (data ?? []).map(item =>
-                `<option value="${item.id}">${escHtml(item.label)}</option>`
-            ).join('');
-    } catch {
+        const opzioni = (data ?? []).map(item =>
+            `<option value="${escHtml(String(item.id))}">${escHtml(item.label)}</option>`
+        ).join('');
+        sel.innerHTML = '<option value="">— Seleziona —</option>' + opzioni;
+    } catch (err) {
         sel.innerHTML = '<option value="">— Errore caricamento —</option>';
+        console.error(`[populateSelect] Errore ${selectId}:`, err.message);
+    } finally {
+        sel.disabled = false;
     }
 }
 
@@ -321,23 +343,25 @@ function clearFormErrors() {
 //  UTILITY — Toast
 // ════════════════════════════════════════════════════════════
 
-/**
- * Mostra un messaggio toast.
- * @param {'success'|'danger'|'warning'|'info'} type
- * @param {string} title
- * @param {string} message
- * @param {number} duration  ms prima della scomparsa automatica
- */
 function showToast(type, title, message, duration = 4000) {
+    // type="success"/"danger"/"alert"/"info"; Per vedere tutte le icone (modifica un record)
     const container = document.getElementById('toast-container');
     if (!container) return;
 
-    const icons = { success: '✅', danger: '❌', warning: '⚠️', info: 'ℹ️' };
+    // Definiamo gli SVG come stringhe
+    const icons = {
+        success: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+        danger: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`,
+        warning: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`,
+        info: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`
+    };
 
     const el = document.createElement('div');
     el.className = `toast toast-${type}`;
+    
+    // Inserimento dell'icona scelta
     el.innerHTML = `
-        <span class="toast-icon">${icons[type] ?? 'ℹ️'}</span>
+        <span class="toast-icon">${icons[type] ?? icons.info}</span>
         <div class="toast-body">
             <div class="toast-title">${escHtml(title)}</div>
             <div class="toast-msg">${escHtml(message)}</div>
@@ -345,15 +369,16 @@ function showToast(type, title, message, duration = 4000) {
 
     container.appendChild(el);
 
-    // Rimozione automatica
     const remove = () => {
         el.classList.add('toast-hide');
         el.addEventListener('animationend', () => el.remove(), { once: true });
     };
 
     const timer = setTimeout(remove, duration);
-    // Clic per chiuderlo anticipatamente
-    el.addEventListener('click', () => { clearTimeout(timer); remove(); });
+    el.addEventListener('click', () => { 
+        clearTimeout(timer); 
+        remove(); 
+    });
 }
 
 // ════════════════════════════════════════════════════════════
@@ -361,8 +386,7 @@ function showToast(type, title, message, duration = 4000) {
 // ════════════════════════════════════════════════════════════
 
 function handleError(err, context = '') {
-    const prefix = context ? `[${context}] ` : '';
-    console.error(`${prefix}${err.message}`, err);
+    console.error(`[${context}] ${err.message}`, err);
 
     if (err.status === 401) {
         showToast('danger', 'Sessione scaduta', 'Verrai reindirizzato al login…', 3000);

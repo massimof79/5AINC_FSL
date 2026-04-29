@@ -4,24 +4,21 @@
  * Pagina di registrazione utenti.
  * Progetto: 5AINC_FSL
  *
- * - GET  → mostra il form di registrazione
- * - POST → valida i dati e crea il nuovo account
+ * Usa auth.php (Gruppo 4) per la gestione sessione.
  */
 
 declare(strict_types=1);
 
-session_start();
+require_once __DIR__ . '/auth.php';   // isLoggedIn
+require_once __DIR__ . '/config.php'; // $pdo
 
-// Se l'utente è già loggato, reindirizza alla pagina principale
-if (!empty($_SESSION['user_id'])) {
-    header('Location: esperienze.html');
+if (isLoggedIn()) {
+    header('Location: esperienze.php');
     exit;
 }
 
-$error   = '';
-$success = '';
+$error = '';
 
-// ── Gestione POST ────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $username  = trim((string) ($_POST['username'] ?? ''));
@@ -37,11 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($password !== $password2) {
         $error = 'Le password non coincidono.';
     } else {
-        require_once __DIR__ . '/config.php';
-        /** @var PDO $pdo */
-
         try {
-            // Controlla username duplicato
             $check = $pdo->prepare('SELECT ID FROM utenti WHERE username = :username LIMIT 1');
             $check->execute([':username' => $username]);
 
@@ -84,11 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       background: var(--bg-light);
     }
 
-    .login-wrapper {
-      width: 100%;
-      max-width: 420px;
-      padding: 1rem;
-    }
+    .login-wrapper  { width: 100%; max-width: 420px; padding: 1rem; }
 
     .login-card {
       background: var(--bg-card);
@@ -98,10 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       padding: 2.5rem 2rem;
     }
 
-    .login-header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
+    .login-header   { text-align: center; margin-bottom: 2rem; }
 
     .login-logo {
       display: inline-flex;
@@ -114,9 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       margin-bottom: 0.5rem;
     }
 
-    .login-logo .logo-accent {
-      color: var(--accent);
-    }
+    .login-logo .logo-accent  { color: var(--accent); }
 
     .login-logo-icon {
       background: var(--primary);
@@ -127,15 +111,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       justify-content: center;
     }
 
-    .login-logo-icon svg {
-      color: #fff;
-    }
+    .login-logo-icon svg { color: #fff; }
 
-    .login-subtitle {
-      font-size: var(--fs-sm);
-      color: var(--text-muted);
-      margin-top: 0.25rem;
-    }
+    .login-subtitle { font-size: var(--fs-sm); color: var(--text-muted); margin-top: 0.25rem; }
 
     .alert {
       padding: 0.75rem 1rem;
@@ -146,22 +124,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       border-left: 4px solid;
     }
 
-    .alert-danger {
-      background: #fee2e2;
-      color: #991b1b;
-      border-color: var(--danger);
-    }
+    .alert-danger { background: #fee2e2; color: #991b1b; border-color: var(--danger); }
 
-    .form-label-row {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      margin-bottom: 0.35rem;
-    }
-
-    .form-label-row svg {
-      color: var(--text-muted);
-    }
+    .form-label-row { display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem; }
+    .form-label-row svg { color: var(--text-muted); }
 
     .btn-login {
       width: 100%;
@@ -171,18 +137,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       margin-top: 0.5rem;
     }
 
-    .login-footer {
-      text-align: center;
-      margin-top: 1.5rem;
-      font-size: var(--fs-sm);
-      color: var(--text-muted);
-    }
-
-    .login-divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 1.5rem 0;
-    }
+    .login-footer { text-align: center; margin-top: 1.5rem; font-size: var(--fs-sm); color: var(--text-muted); }
+    .login-divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
   </style>
 </head>
 <body>
@@ -190,7 +146,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="login-wrapper">
   <div class="login-card">
 
-    <!-- Intestazione -->
     <div class="login-header">
       <div class="login-logo">
         <div class="login-logo-icon">
@@ -205,14 +160,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <p class="login-subtitle">Crea il tuo account</p>
     </div>
 
-    <!-- Alert errore -->
     <?php if ($error !== ''): ?>
       <div class="alert alert-danger" role="alert">
         <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
       </div>
     <?php endif; ?>
 
-    <!-- Form di registrazione -->
     <form method="POST" action="register.php" novalidate>
 
       <div class="form-group">
@@ -224,17 +177,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </svg>
           <span class="form-label" style="margin:0">Username</span>
         </label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          class="form-control"
-          placeholder="Scegli un username"
-          value="<?= htmlspecialchars($_POST['username'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
-          autocomplete="username"
-          required
-          autofocus
-        />
+        <input type="text" id="username" name="username" class="form-control"
+               placeholder="Scegli un username"
+               value="<?= htmlspecialchars($_POST['username'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+               autocomplete="username" required autofocus />
       </div>
 
       <div class="form-group">
@@ -246,15 +192,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </svg>
           <span class="form-label" style="margin:0">Password</span>
         </label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          class="form-control"
-          placeholder="••••••••"
-          autocomplete="new-password"
-          required
-        />
+        <input type="password" id="password" name="password" class="form-control"
+               placeholder="••••••••" autocomplete="new-password" required />
       </div>
 
       <div class="form-group">
@@ -266,15 +205,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </svg>
           <span class="form-label" style="margin:0">Conferma password</span>
         </label>
-        <input
-          type="password"
-          id="password2"
-          name="password2"
-          class="form-control"
-          placeholder="••••••••"
-          autocomplete="new-password"
-          required
-        />
+        <input type="password" id="password2" name="password2" class="form-control"
+               placeholder="••••••••" autocomplete="new-password" required />
       </div>
 
       <button type="submit" class="btn btn-primary btn-login">

@@ -1,11 +1,15 @@
 <?php
-session_start();
-if (empty($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit;
-}
-?>
+/**
+ * esperienze.php
+ * Pagina principale gestione esperienze PCTO.
+ * Progetto: 5AINC_FSL — Gruppo 3
+ */
 
+declare(strict_types=1);
+
+require_once __DIR__ . '/auth.php';
+requireLoginPage();
+?>
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -13,19 +17,14 @@ if (empty($_SESSION['user_id'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Esperienze PCTO — 5AINC_FSL</title>
 
-  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <!-- Global CSS -->
   <link rel="stylesheet" href="../global.css" />
 </head>
 <body>
 
-<!-- ╔══════════════════════════════════════════════════════╗ -->
-<!-- ║  APP SHELL                                           ║ -->
-<!-- ╚══════════════════════════════════════════════════════╝ -->
 <div class="app-shell">
 
   <!-- ── SIDEBAR ─────────────────────────────────────────── -->
@@ -41,7 +40,7 @@ if (empty($_SESSION['user_id'])) {
 
     <nav class="sidebar-nav">
       <div class="sidebar-section-label">Gestione</div>
-      <a href="#" class="active">
+      <a href="esperienze.php" class="active">
         <span class="nav-icon">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 2.25H8.25A2.25 2.25 0 006 4.5v15A2.25 2.25 0 008.25 21.75h7.5a2.25 2.25 0 002.25-2.25V4.5a2.25 2.25 0 00-2.25-2.25z" />
@@ -105,68 +104,42 @@ if (empty($_SESSION['user_id'])) {
       </a>
     </nav>
   </aside>
-  <!-- /SIDEBAR -->
 
   <!-- ── TOPBAR ───────────────────────────────────────────── -->
   <header class="topbar">
-    <!-- Toggle mobile -->
     <button class="btn btn-secondary btn-icon" id="btn-toggle-sidebar"
             title="Apri/chiudi menu" style="display:none">☰</button>
 
     <span class="topbar-title">Gestione Esperienze PCTO</span>
 
     <div class="topbar-right">
-      <!-- Badge sessione: username popolato via PHP o JS -->
       <div class="user-badge">
-        <div class="avatar" id="user-avatar">U</div>
-        <span id="user-name">Utente</span>
+        <div class="avatar"><?= strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1)) ?></div>
+        <span><?= htmlspecialchars($_SESSION['username'] ?? 'Utente', ENT_QUOTES, 'UTF-8') ?></span>
       </div>
       <a href="logout.php" class="btn btn-secondary btn-sm">Logout</a>
     </div>
   </header>
-  <!-- /TOPBAR -->
 
   <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
   <main class="main-content">
 
-    <!-- Page header -->
     <div class="page-header">
       <h1>Esperienze</h1>
       <p>Visualizza, crea e gestisci le esperienze di alternanza scuola-lavoro.</p>
     </div>
 
-    <!-- Stats veloci (opzionali, valorizzate lato JS se necessario) -->
-    <div class="stats-grid" id="stats-grid" style="display:none">
-      <div class="stat-card">
-        <div class="stat-value" id="stat-total">—</div>
-        <div class="stat-label">Totale esperienze</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="stat-studenti">—</div>
-        <div class="stat-label">Studenti coinvolti</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-value" id="stat-ore">—</div>
-        <div class="stat-label">Ore totali svolte</div>
-      </div>
-    </div>
-
-    <!-- Card principale -->
     <div class="card">
       <div class="card-header">
         <h2 class="card-title">Elenco Esperienze</h2>
-        <button class="btn btn-primary" id="btn-nuova">
-          ＋ Nuova Esperienza
-        </button>
+        <button class="btn btn-primary" id="btn-nuova">＋ Nuova Esperienza</button>
       </div>
 
-      <!-- Spinner di caricamento -->
       <div id="table-spinner" class="flex-center mt-2 mb-2" style="display:none">
         <div class="spinner"></div>
-        <span class="text-muted mt-1" style="margin-left:.75rem">Caricamento…</span>
+        <span class="text-muted" style="margin-left:.75rem">Caricamento…</span>
       </div>
 
-      <!-- Tabella responsive -->
       <div class="table-wrapper">
         <table id="tabella-esperienze">
           <thead>
@@ -183,21 +156,14 @@ if (empty($_SESSION['user_id'])) {
             </tr>
           </thead>
           <tbody id="esperienze-tbody">
-            <tr>
-              <td colspan="9" class="table-empty">Caricamento in corso…</td>
-            </tr>
+            <tr><td colspan="9" class="table-empty">Caricamento in corso…</td></tr>
           </tbody>
         </table>
       </div>
-      <!-- /table-wrapper -->
     </div>
-    <!-- /card -->
 
   </main>
-  <!-- /MAIN CONTENT -->
-
-</div>
-<!-- /APP SHELL -->
+</div><!-- /app-shell -->
 
 
 <!-- ╔══════════════════════════════════════════════════════╗ -->
@@ -208,44 +174,34 @@ if (empty($_SESSION['user_id'])) {
   <div class="modal">
     <div class="modal-header">
       <h3 class="modal-title" id="modal-title">Nuova Esperienza</h3>
-      <button class="modal-close" id="btn-chiudi-modal"
-              aria-label="Chiudi modal">&times;</button>
+      <button class="modal-close" id="btn-chiudi-modal" aria-label="Chiudi">&times;</button>
     </div>
 
+    <form id="form-esperienza" novalidate>
     <div class="modal-body">
-      <form id="form-esperienza" novalidate>
 
         <!-- Periodo effettivo -->
         <div class="form-group">
           <label class="form-label" for="inp-periodo">
             Periodo effettivo <span class="required">*</span>
           </label>
-          <input
-            type="text"
-            id="inp-periodo"
-            name="periodo_effettivo"
-            class="form-control"
-            placeholder="es. Gennaio 2025 – Marzo 2025"
-            required
-          />
+          <input type="text" id="inp-periodo" name="periodo_effettivo"
+                 class="form-control"
+                 placeholder="es. Mar 2026 – Apr 2026"
+                 required />
           <div class="form-error" id="err-periodo"></div>
         </div>
 
-        <!-- Ore previste / svolte -->
+        <!-- Ore previste / svolte affiancate -->
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="inp-ore-previste">
               Ore previste <span class="required">*</span>
             </label>
-            <input
-              type="number"
-              id="inp-ore-previste"
-              name="numero_ore_previste"
-              class="form-control"
-              min="0"
-              placeholder="120"
-              required
-            />
+            <input type="number" id="inp-ore-previste" name="numero_ore_previste"
+                   class="form-control" min="0" step="1"
+                   placeholder="es. 120"
+                   required />
             <div class="form-error" id="err-ore-previste"></div>
           </div>
 
@@ -253,15 +209,10 @@ if (empty($_SESSION['user_id'])) {
             <label class="form-label" for="inp-ore-svolte">
               Ore svolte <span class="required">*</span>
             </label>
-            <input
-              type="number"
-              id="inp-ore-svolte"
-              name="numero_ore_svolte"
-              class="form-control"
-              min="0"
-              placeholder="115"
-              required
-            />
+            <input type="number" id="inp-ore-svolte" name="numero_ore_svolte"
+                   class="form-control" min="0" step="1"
+                   placeholder="es. 115"
+                   required />
             <div class="form-error" id="err-ore-svolte"></div>
           </div>
         </div>
@@ -271,15 +222,10 @@ if (empty($_SESSION['user_id'])) {
           <label class="form-label" for="inp-studenti">
             Numero studenti <span class="required">*</span>
           </label>
-          <input
-            type="number"
-            id="inp-studenti"
-            name="numero_studenti"
-            class="form-control"
-            min="1"
-            placeholder="5"
-            required
-          />
+          <input type="number" id="inp-studenti" name="numero_studenti"
+                 class="form-control" min="1" step="1"
+                 placeholder="es. 3"
+                 required />
           <div class="form-error" id="err-studenti"></div>
         </div>
 
@@ -288,9 +234,8 @@ if (empty($_SESSION['user_id'])) {
           <label class="form-label" for="sel-docente">
             Tutor Scolastico <span class="required">*</span>
           </label>
-          <select id="sel-docente" name="codice_docente"
-                  class="form-control" required>
-            <option value="">— Seleziona —</option>
+          <select id="sel-docente" name="codice_docente" class="form-control" required>
+            <option value="">— Seleziona un tutor scolastico —</option>
           </select>
           <div class="form-error" id="err-docente"></div>
         </div>
@@ -300,9 +245,8 @@ if (empty($_SESSION['user_id'])) {
           <label class="form-label" for="sel-tutor">
             Tutor Aziendale <span class="required">*</span>
           </label>
-          <select id="sel-tutor" name="codice_tutor"
-                  class="form-control" required>
-            <option value="">— Seleziona —</option>
+          <select id="sel-tutor" name="codice_tutor" class="form-control" required>
+            <option value="">— Seleziona un tutor aziendale —</option>
           </select>
           <div class="form-error" id="err-tutor"></div>
         </div>
@@ -312,76 +256,45 @@ if (empty($_SESSION['user_id'])) {
           <label class="form-label" for="sel-disponibilita">
             Disponibilità <span class="required">*</span>
           </label>
-          <select id="sel-disponibilita" name="codice_disponibilita"
-                  class="form-control" required>
-            <option value="">— Seleziona —</option>
+          <select id="sel-disponibilita" name="codice_disponibilita" class="form-control" required>
+            <option value="">— Seleziona una disponibilità —</option>
           </select>
           <div class="form-error" id="err-disponibilita"></div>
         </div>
 
-      </form>
     </div>
-    <!-- /modal-body -->
 
     <div class="modal-footer">
-      <button type="button" class="btn btn-secondary" id="btn-annulla">
-        Annulla
-      </button>
-      <button type="submit" form="form-esperienza" class="btn btn-primary">
+      <button type="button" class="btn btn-secondary" id="btn-annulla">Annulla</button>
+      <button type="submit" id="btn-submit" class="btn btn-primary">
         Crea esperienza
       </button>
     </div>
+    </form>
   </div>
-  <!-- /modal -->
 </div>
-<!-- /MODAL OVERLAY -->
 
 
-<!-- ╔══════════════════════════════════════════════════════╗ -->
-<!-- ║  TOAST CONTAINER                                     ║ -->
-<!-- ╚══════════════════════════════════════════════════════╝ -->
+<!-- ── TOAST CONTAINER ──────────────────────────────────── -->
 <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
 
-<!-- ── Script ─────────────────────────────────────────────── -->
+<!-- ── Script ───────────────────────────────────────────── -->
 <script src="esperienze.js"></script>
 
 <script>
-  /* ── Piccoli adattamenti run-time ───────────────────────── */
-
-  // 1. Mostra toggle sidebar su schermi piccoli
+  // Toggle sidebar mobile
   const btnToggle = document.getElementById('btn-toggle-sidebar');
   const sidebar   = document.getElementById('sidebar');
 
   function checkMobile() {
-    if (window.innerWidth <= 900) {
-      btnToggle.style.display = 'inline-flex';
-    } else {
-      btnToggle.style.display = 'none';
-      sidebar.classList.remove('is-open');
-    }
+    btnToggle.style.display = window.innerWidth <= 900 ? 'inline-flex' : 'none';
+    if (window.innerWidth > 900) sidebar.classList.remove('is-open');
   }
 
   btnToggle.addEventListener('click', () => sidebar.classList.toggle('is-open'));
   window.addEventListener('resize', checkMobile);
   checkMobile();
-
-  // 2. Aggiorna il tasto submit del modal in base alla modalità
-  //    (viene rieseguito ogni volta che si apre il modal)
-  const modalOverlayEl = document.getElementById('modal-overlay');
-  const btnSubmit      = document.querySelector('[type="submit"][form="form-esperienza"]');
-  const modalTitleEl   = document.getElementById('modal-title');
-
-  const observer = new MutationObserver(() => {
-    const isEdit = modalTitleEl.textContent.startsWith('Modifica');
-    btnSubmit.textContent = isEdit ? 'Salva modifiche' : 'Crea esperienza';
-  });
-  observer.observe(modalTitleEl, { childList: true, characterData: true, subtree: true });
-
-  // 3. Leggi l'username dalla sessione via PHP inline
-  //    Se il server-side rendering è disponibile:
-  document.getElementById('user-name').textContent  = '<?= htmlspecialchars($_SESSION["username"] ?? "Utente") ?>';
-  document.getElementById('user-avatar').textContent = '<?= strtoupper(substr($_SESSION["username"] ?? "U", 0, 1)) ?>';
 </script>
 
 </body>

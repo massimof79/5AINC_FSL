@@ -548,16 +548,16 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   animation: toastIn 0.3s ease forwards;
 }
 
-.toast.toast-success { border-left-color: var(--success); }
+.toast.toast-success { color: var(--success); border-left-color: var(--success); }
 .toast.toast-success .toast-icon { color: var(--success); }
 
-.toast.toast-danger  { border-left-color: var(--danger);  }
+.toast.toast-danger  { color: var(--danger); border-left-color: var(--danger);  }
 .toast.toast-danger  .toast-icon { color: var(--danger); }
 
-.toast.toast-warning { border-left-color: var(--warning); }
+.toast.toast-warning { color: var(--warning); border-left-color: var(--warning); }
 .toast.toast-warning .toast-icon { color: var(--warning); }
 
-.toast.toast-info    { border-left-color: var(--info);    }
+.toast.toast-info    { color: var(--info); border-left-color: var(--info);    }
 .toast.toast-info    .toast-icon { color: var(--info); }
 
 .toast-icon { font-size: 1rem; margin-top: 1px; flex-shrink: 0; }

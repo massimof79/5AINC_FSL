@@ -4,26 +4,29 @@
  * Pagina di autenticazione utenti.
  * Progetto: 5AINC_FSL
  *
- * - GET  → mostra il form di login
- * - POST → verifica le credenziali e avvia la sessione
+ * Sessione gestita tramite auth.php (Gruppo 4).
  */
 
 declare(strict_types=1);
 
-session_start();
+require_once __DIR__ . '/auth.php';   // isLoggedIn, loginUser, verifyUserPassword
+require_once __DIR__ . '/config.php'; // $pdo
 
-// Se l'utente è già loggato, reindirizza alla pagina principale
-if (!empty($_SESSION['user_id'])) {
-    header('Location: esperienze.html');
+// Se già loggato, vai alla dashboard
+if (isLoggedIn()) {
+    header('Location: esperienze.php');
     exit;
 }
 
 $error   = '';
 $success = '';
 
-// Messaggio di conferma dopo il logout
+// Messaggio di conferma dopo il logout o registrazione
 if (isset($_GET['logout']) && $_GET['logout'] === '1') {
     $success = 'Disconnessione avvenuta con successo.';
+}
+if (isset($_GET['registered']) && $_GET['registered'] === '1') {
+    $success = 'Registrazione completata. Ora puoi accedere.';
 }
 
 // ── Gestione POST ────────────────────────────────────────────
@@ -35,24 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($username === '' || $password === '') {
         $error = 'Inserisci username e password.';
     } else {
-        require_once __DIR__ . '/config.php';
-        /** @var PDO $pdo */
-
         try {
             $stmt = $pdo->prepare(
-                'SELECT id, username, password FROM UTENTI WHERE username = :username LIMIT 1'
+                'SELECT ID, username, password FROM utenti WHERE username = :username LIMIT 1'
             );
             $stmt->execute([':username' => $username]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            $user = $stmt->fetch();
 
-            if ($user && password_verify($password, $user['password'])) {
-                // Rigenera l'ID di sessione per prevenire session fixation
-                session_regenerate_id(true);
-
-                $_SESSION['user_id']  = $user['id'];
-                $_SESSION['username'] = $user['username'];
-
-                header('Location: esperienze.html');
+            if ($user && verifyUserPassword($password, (string) $user['password'])) {
+                loginUser($user);           // session_regenerate_id + $_SESSION
+                header('Location: esperienze.php');
                 exit;
             } else {
                 $error = 'Credenziali non valide. Riprova.';
@@ -78,7 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="stylesheet" href="../global.css" />
 
   <style>
-    /* ── Layout pagina login ──────────────────────────────── */
     body {
       display: flex;
       align-items: center;
@@ -93,7 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       padding: 1rem;
     }
 
-    /* ── Card login ───────────────────────────────────────── */
     .login-card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -102,7 +95,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       padding: 2.5rem 2rem;
     }
 
-    /* ── Logo / intestazione ──────────────────────────────── */
     .login-header {
       text-align: center;
       margin-bottom: 2rem;
@@ -119,9 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       margin-bottom: 0.5rem;
     }
 
-    .login-logo .logo-accent {
-      color: var(--accent);
-    }
+    .login-logo .logo-accent { color: var(--accent); }
 
     .login-logo-icon {
       background: var(--primary);
@@ -132,9 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       justify-content: center;
     }
 
-    .login-logo-icon svg {
-      color: #fff;
-    }
+    .login-logo-icon svg { color: #fff; }
 
     .login-subtitle {
       font-size: var(--fs-sm);
@@ -142,7 +130,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       margin-top: 0.25rem;
     }
 
-    /* ── Messaggio di errore ──────────────────────────────── */
     .alert {
       padding: 0.75rem 1rem;
       border-radius: var(--radius);
@@ -152,19 +139,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       border-left: 4px solid;
     }
 
-    .alert-danger {
-      background: #fee2e2;
-      color: #991b1b;
-      border-color: var(--danger);
-    }
+    .alert-danger  { background: #fee2e2; color: #991b1b; border-color: var(--danger); }
+    .alert-success { background: #d1fae5; color: #065f46; border-color: var(--accent); }
 
-    .alert-success {
-      background: #d1fae5;
-      color: #065f46;
-      border-color: var(--accent);
-    }
-
-    /* ── Label con icona SVG inline ──────────────────────── */
     .form-label-row {
       display: flex;
       align-items: center;
@@ -172,11 +149,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       margin-bottom: 0.35rem;
     }
 
-    .form-label-row svg {
-      color: var(--text-muted);
-    }
+    .form-label-row svg { color: var(--text-muted); }
 
-    /* ── Pulsante submit full-width ───────────────────────── */
     .btn-login {
       width: 100%;
       justify-content: center;
@@ -185,7 +159,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       margin-top: 0.5rem;
     }
 
-    /* ── Footer della card ────────────────────────────────── */
     .login-footer {
       text-align: center;
       margin-top: 1.5rem;
@@ -193,14 +166,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       color: var(--text-muted);
     }
 
-    /* ── Separatore ───────────────────────────────────────── */
     .login-divider {
       border: none;
       border-top: 1px solid var(--border);
       margin: 1.5rem 0;
     }
 
-    /* ── Link di reindirizzamento a register.php ──────────── */
     .register-link {
       text-align: center;
       margin-top: 1rem;
@@ -214,10 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       transition: color 0.2s ease;
     }
 
-    .register-link a:hover {
-      color: var(--accent);
-      text-decoration: underline;
-    }
+    .register-link a:hover { color: var(--accent); text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -225,7 +193,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="login-wrapper">
   <div class="login-card">
 
-    <!-- Intestazione -->
     <div class="login-header">
       <div class="login-logo">
         <div class="login-logo-icon">
@@ -240,7 +207,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <p class="login-subtitle">Gestione esperienze alternanza scuola-lavoro</p>
     </div>
 
-    <!-- Alert errore / successo -->
     <?php if ($error !== ''): ?>
       <div class="alert alert-danger" role="alert">
         <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
@@ -253,7 +219,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
     <?php endif; ?>
 
-    <!-- Form di login -->
     <form method="POST" action="login.php" novalidate>
 
       <div class="form-group">
@@ -314,9 +279,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="login-footer">
       Classe 5AINC &mdash; Progetto FSL
-      <br>
+    </div>
+    <div class="register-link">
       Non hai un account? <a href="register.php">Registrati</a>
     </div>
+
   </div>
 </div>
 

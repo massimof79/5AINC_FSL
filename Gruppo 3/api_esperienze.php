@@ -18,13 +18,15 @@
 
 declare(strict_types=1);
 
-session_start();
+// ── Sessione e autenticazione (Gruppo 4) ─────────────────────
+require_once __DIR__ . '/auth.php';    // isLoggedIn, requireLoginApi
+require_once __DIR__ . '/config.php';  // $pdo
 
-// ── Intestazioni CORS / JSON ────────────────────────────────
+// ── Intestazioni JSON ────────────────────────────────────────
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 
-// ── Helper: risposta JSON standardizzata ────────────────────
+// ── Helper: risposta JSON standardizzata ─────────────────────
 function respond(bool $success, mixed $data = null, string $message = '', int $httpCode = 200): never
 {
     http_response_code($httpCode);
@@ -36,21 +38,14 @@ function respond(bool $success, mixed $data = null, string $message = '', int $h
     exit;
 }
 
-// ── Verifica sessione attiva ─────────────────────────────────
-if (empty($_SESSION['user_id'])) {
-    respond(false, null, 'Sessione non valida. Effettua il login.', 401);
-}
+// ── Verifica sessione attiva (tramite auth.php del Gruppo 4) ──
+requireLoginApi();
 
-// ── Connessione DB tramite config.php ────────────────────────
-require_once __DIR__ . '/config.php';
-// config.php deve esporre $pdo (istanza PDO)
 /** @var PDO $pdo */
 
 // ── Router ───────────────────────────────────────────────────
-$method = $_SERVER['REQUEST_METHOD'];
-$id     = isset($_GET['id']) ? (int) $_GET['id'] : null;
-
-// Risorse ausiliarie per popolare le <select> del form
+$method   = $_SERVER['REQUEST_METHOD'];
+$id       = isset($_GET['id']) ? (int) $_GET['id'] : null;
 $resource = $_GET['resource'] ?? null;
 
 try {
@@ -66,7 +61,6 @@ try {
         default  => respond(false, null, 'Metodo HTTP non supportato.', 405),
     };
 } catch (PDOException $e) {
-    // Non esporre dettagli interni in produzione
     error_log('[api_esperienze] PDOException: ' . $e->getMessage());
     respond(false, null, 'Errore del database. Riprova più tardi.', 500);
 } catch (JsonException $e) {
@@ -96,10 +90,11 @@ function handleResource(PDO $pdo, string $resource): never
                      FROM TUTOR_AZIENDALE ORDER BY cognome, nome')
             ->fetchAll(PDO::FETCH_ASSOC),
 
+        // BUG FIX: era ORDER BY data_inizio (inesistente) → corretto in periodo_previsto
         'disponibilita' => $pdo
             ->query('SELECT codice_disponibilita AS id,
                             CONCAT("Periodo: ", periodo_previsto, " - ", descrizione) AS label
-                     FROM DISPONIBILITA ORDER BY data_inizio DESC')
+                     FROM DISPONIBILITA ORDER BY periodo_previsto DESC')
             ->fetchAll(PDO::FETCH_ASSOC),
     };
 
@@ -112,13 +107,12 @@ function handleResource(PDO $pdo, string $resource): never
 
 function listEsperienze(PDO $pdo): never
 {
-    // Prima verifichiamo se la tabella ESPERIENZA esiste
     try {
         $checkTable = $pdo->query("SHOW TABLES LIKE 'ESPERIENZA'");
         if ($checkTable->rowCount() === 0) {
             respond(true, [], 'Nessuna tabella ESPERIENZA trovata. Creare prima le tabelle.');
         }
-        
+
         $sql = <<<'SQL'
             SELECT
                 e.codice_esperienza,
@@ -133,25 +127,25 @@ function listEsperienze(PDO $pdo): never
                 CONCAT(ta.nome, ' ', ta.cognome) AS nome_tutor_aziendale,
                 d.periodo_previsto AS data_disponibilita
             FROM ESPERIENZA e
-            LEFT JOIN TUTOR_SCOLASTICO ts ON ts.codice_docente        = e.codice_docente
-            LEFT JOIN TUTOR_AZIENDALE  ta ON ta.codice_tutor          = e.codice_tutor
-            LEFT JOIN DISPONIBILITA     d ON d.codice_disponibilita   = e.codice_disponibilita
-            ORDER BY e.codice_esperienza ASC /*Modifica tra ASC e DISC per l'ordine nella tabella*/
+            LEFT JOIN TUTOR_SCOLASTICO ts ON ts.codice_docente      = e.codice_docente
+            LEFT JOIN TUTOR_AZIENDALE  ta ON ta.codice_tutor        = e.codice_tutor
+            LEFT JOIN DISPONIBILITA     d ON d.codice_disponibilita = e.codice_disponibilita
+            ORDER BY e.codice_esperienza ASC
         SQL;
-    
+
         $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         respond(true, $rows);
+
     } catch (PDOException $e) {
         error_log('[api_esperienze] listEsperienze: ' . $e->getMessage());
-        
-        // Estrai un messaggio più user-friendly
+
         $message = 'Errore nel caricamento dei dati.';
-        if (strpos($e->getMessage(), 'Base table or view not found') !== false) {
+        if (str_contains($e->getMessage(), 'Base table or view not found')) {
             $message = 'Tabelle del database non trovate. Contattare l\'amministratore.';
-        } elseif (strpos($e->getMessage(), 'Unknown column') !== false) {
+        } elseif (str_contains($e->getMessage(), 'Unknown column')) {
             $message = 'Struttura del database incompleta. Verificare le colonne delle tabelle.';
         }
-        
+
         respond(false, null, $message, 500);
     }
 }
@@ -193,7 +187,7 @@ function getEsperienza(PDO $pdo, int $id): never
 
 function createEsperienza(PDO $pdo): never
 {
-    $body = parseRequestBody();
+    $body   = parseRequestBody();
     $fields = validateFields($body);
 
     $sql = <<<'SQL'
@@ -226,7 +220,6 @@ function createEsperienza(PDO $pdo): never
 
 function updateEsperienza(PDO $pdo, int $id): never
 {
-    // Verifica esistenza
     $check = $pdo->prepare('SELECT codice_esperienza FROM ESPERIENZA WHERE codice_esperienza = :id');
     $check->execute([':id' => $id]);
     if (!$check->fetch()) {
@@ -285,7 +278,6 @@ function deleteEsperienza(PDO $pdo, int $id): never
 //  HELPERS
 // ════════════════════════════════════════════════════════════
 
-/** Legge il body della richiesta come JSON. */
 function parseRequestBody(): array
 {
     $raw = file_get_contents('php://input');
@@ -301,26 +293,25 @@ function parseRequestBody(): array
     return $data;
 }
 
-/** Valida e sanitizza i campi obbligatori. Ritorna array pulito. */
 function validateFields(array $body): array
 {
     $errors = [];
 
-    $periodo        = trim((string) ($body['periodo_effettivo']    ?? ''));
-    $orePreviste    = isset($body['numero_ore_previste'])    ? (int) $body['numero_ore_previste']    : null;
-    $oreSvolte      = isset($body['numero_ore_svolte'])      ? (int) $body['numero_ore_svolte']      : null;
-    $studenti       = isset($body['numero_studenti'])        ? (int) $body['numero_studenti']        : null;
-    $docente        = isset($body['codice_docente'])         ? (int) $body['codice_docente']         : null;
-    $disponibilita  = isset($body['codice_disponibilita'])   ? (int) $body['codice_disponibilita']   : null;
-    $tutor          = isset($body['codice_tutor'])           ? (int) $body['codice_tutor']           : null;
+    $periodo       = trim((string) ($body['periodo_effettivo']   ?? ''));
+    $orePreviste   = isset($body['numero_ore_previste'])   ? (int) $body['numero_ore_previste']   : null;
+    $oreSvolte     = isset($body['numero_ore_svolte'])     ? (int) $body['numero_ore_svolte']     : null;
+    $studenti      = isset($body['numero_studenti'])       ? (int) $body['numero_studenti']       : null;
+    $docente       = isset($body['codice_docente'])        ? (int) $body['codice_docente']        : null;
+    $disponibilita = isset($body['codice_disponibilita'])  ? (int) $body['codice_disponibilita']  : null;
+    $tutor         = isset($body['codice_tutor'])          ? (int) $body['codice_tutor']          : null;
 
-    if ($periodo === '')      $errors[] = 'periodo_effettivo è obbligatorio.';
-    if ($orePreviste === null || $orePreviste < 0) $errors[] = 'numero_ore_previste non valido.';
-    if ($oreSvolte   === null || $oreSvolte   < 0) $errors[] = 'numero_ore_svolte non valido.';
-    if ($studenti    === null || $studenti    < 0) $errors[] = 'numero_studenti non valido.';
-    if (!$docente)       $errors[] = 'codice_docente è obbligatorio.';
-    if (!$disponibilita) $errors[] = 'codice_disponibilita è obbligatorio.';
-    if (!$tutor)         $errors[] = 'codice_tutor è obbligatorio.';
+    if ($periodo === '')                                $errors[] = 'periodo_effettivo è obbligatorio.';
+    if ($orePreviste === null || $orePreviste < 0)     $errors[] = 'numero_ore_previste non valido.';
+    if ($oreSvolte   === null || $oreSvolte   < 0)     $errors[] = 'numero_ore_svolte non valido.';
+    if ($studenti    === null || $studenti    < 1)     $errors[] = 'numero_studenti non valido.';
+    if (!$docente)                                     $errors[] = 'codice_docente è obbligatorio.';
+    if (!$disponibilita)                               $errors[] = 'codice_disponibilita è obbligatorio.';
+    if (!$tutor)                                       $errors[] = 'codice_tutor è obbligatorio.';
 
     if ($errors) {
         respond(false, ['errors' => $errors], implode(' | ', $errors), 422);
