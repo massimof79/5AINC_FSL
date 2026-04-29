@@ -20,13 +20,13 @@
 
 ## 1. Contesto del progetto
 
-Il progetto PCTOConnect è un'applicazione web per la gestione amministrativa delle esperienze PCTO (Percorsi per le Competenze Trasversali e per l'Orientamento), sviluppata dalla classe 5AINC come esercitazione pratica su architetture web a tre livelli.
+Il progetto PCTOConnect è un'applicazione web per la gestione amministrativa delle esperienze FSL (Formazione Scuola Lavoro) ex PCTO, sviluppata dalla classe 5AINC come esercitazione pratica su architetture web a tre livelli.
 
 La classe è divisa in quattro gruppi, ognuno responsabile di un sottoinsieme delle tabelle del database. Tutti i gruppi condividono lo stesso database, la stessa sessione PHP e lo stesso foglio di stile globale. Il Gruppo 3 ha prodotto:
 
 - il sistema di design condiviso (`global.css`)
 - il modulo di autenticazione centralizzato (`auth.php`, `login.php`, `register.php`, `logout.php`)
-- la pagina PHP di gestione delle esperienze PCTO (`esperienze.php`, `esperienze.js`)
+- la pagina PHP di gestione delle esperienze FSL (`esperienze.php`, `esperienze.js`)
 - la REST API per la tabella `ESPERIENZA` (`api_esperienze.php`)
 
 ---
