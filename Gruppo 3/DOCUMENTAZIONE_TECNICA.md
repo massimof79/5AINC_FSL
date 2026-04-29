@@ -643,7 +643,7 @@ handleFormSubmit(e)
 
 **auth.php come contratto condiviso.** Centralizzare tutta la logica di sessione in un unico file evita duplicazione e garantisce che tutti i gruppi usino gli stessi meccanismi (session_regenerate_id, struttura di $_SESSION, verifica password). Modificare il comportamento della sessione richiede un solo punto di intervento.
 
-**Nessun framework front-end.** JavaScript nativo (ES2020+) rende il codice leggibile a tutta la classe senza conoscenza di framework. Il costo è maggiore verbosità, il guadagno è trasparenza per un progetto didattico.
+**Nessun framework front-end.** JavaScript nativo rende il codice leggibile a chiunque senza conoscenza di framework a costo di una maggiore verbosità.
 
 **Form avvolge modal-body e modal-footer.** Il pulsante submit è fisicamente dentro il `<form>`. L'alternativa (attributo HTML5 `form="id"` su un pulsante esterno al form) è valida ma causa comportamenti inattesi in certi browser quando il form non è nel DOM attivo — la struttura avvolgente elimina la dipendenza.
 
