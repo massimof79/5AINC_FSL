@@ -11,7 +11,7 @@
 4. [Autenticazione — auth.php, login.php, register.php, logout.php](#4-autenticazione--authphp-loginphp-registerphp-logoutphp)
 5. [Interfaccia utente — esperienze.php](#5-interfaccia-utente--esperienzephp)
 6. [Logica client-side — esperienze.js](#6-logica-client-side--esperienzejs)
-7. [API server-side — api\_esperienze.php](#7-api-server-side--api_esperienezphp)
+7. [API server-side — api\_esperienze.php](#7-api-server-side--api_esperienzephp)
 8. [Sicurezza](#8-sicurezza)
 9. [Flusso di una operazione CRUD](#9-flusso-di-una-operazione-crud)
 10. [Scelte progettuali](#10-scelte-progettuali)
