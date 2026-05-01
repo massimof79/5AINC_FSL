@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FSL Panel — Anteprima</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+/* ── global.css ── */
+:root{
+  --primary:#2c3e50;--secondary:#34495e;--accent:#27ae60;--danger:#c0392b;
+  --warning:#f39c12;--info:#2980b9;--success:#27ae60;
+  --bg-light:#f4f7f6;--bg-card:#fff;--text:#2d3748;--text-muted:#718096;
+  --border:#e2e8f0;--sidebar-w:260px;--topbar-h:60px;
+  --radius:8px;--radius-lg:14px;
+  --shadow:0 4px 6px rgba(0,0,0,.08);--shadow-lg:0 10px 25px rgba(0,0,0,.12);
+  --transition:.2s ease;--font-sans:'Inter',system-ui,sans-serif;
+  --fs-sm:.8125rem;--fs-base:.9375rem;--fs-lg:1.125rem;--fs-xl:1.5rem;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{font-family:var(--font-sans);font-size:var(--fs-base);background:var(--bg-light);color:var(--text);line-height:1.6;min-height:100vh}
+a{color:var(--info);text-decoration:none}ul{list-style:none}
+button,input{font-family:inherit}
+
+/* sidebar */
+.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--primary);color:#ecf0f1;display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:1.5rem 1.25rem;font-size:var(--fs-lg);font-weight:700;border-bottom:1px solid rgba(255,255,255,.08);color:#fff;display:flex;align-items:center;gap:.6rem;letter-spacing:-.5px}
+.logo-accent{color:var(--accent)}
+.sidebar-nav{flex:1;padding:1rem 0}
+.sidebar-nav a{display:flex;align-items:center;gap:.75rem;padding:.7rem 1.25rem;color:rgba(255,255,255,.72);font-size:var(--fs-base);border-left:3px solid transparent;transition:all var(--transition);cursor:pointer}
+.sidebar-nav a:hover,.sidebar-nav a.active{background:rgba(255,255,255,.07);color:#fff;border-left-color:var(--accent)}
+.nav-icon{width:18px;text-align:center}
+.sidebar-section-label{padding:.9rem 1.25rem .3rem;font-size:.7rem;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.35);font-weight:600}
+
+/* topbar */
+.topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:var(--topbar-h);background:var(--bg-card);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.75rem;z-index:90;box-shadow:var(--shadow)}
+.topbar-title{font-size:var(--fs-lg);font-weight:600;color:var(--primary)}
+.topbar-right{display:flex;align-items:center;gap:1rem}
+.user-badge{display:flex;align-items:center;gap:.5rem;background:var(--bg-light);border:1px solid var(--border);border-radius:999px;padding:.35rem .9rem;font-size:var(--fs-sm);font-weight:500;color:var(--secondary)}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
+
+/* main */
+.main-content{margin-left:var(--sidebar-w);margin-top:var(--topbar-h);padding:2rem 2.25rem;min-width:0}
+
+/* card */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:1.5rem}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.5rem 1.1rem;font-size:var(--fs-sm);font-weight:600;border-radius:var(--radius);border:1.5px solid transparent;cursor:pointer;transition:filter var(--transition),transform var(--transition);white-space:nowrap;line-height:1.4}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-primary:hover{filter:brightness(1.1)}
+.btn-secondary{background:transparent;color:var(--secondary);border-color:var(--border)}.btn-secondary:hover{background:var(--bg-light)}
+.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}.btn-danger:hover{filter:brightness(1.1)}
+.btn-info{background:var(--info);color:#fff;border-color:var(--info)}.btn-info:hover{filter:brightness(1.1)}
+.btn-sm{padding:.3rem .7rem;font-size:.75rem}
+.btn-lg{padding:.7rem 1.5rem;font-size:var(--fs-base)}
+
+/* table */
+.table-wrapper{width:100%;overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+thead th{background:var(--primary);color:#fff;padding:.8rem 1rem;text-align:left;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+thead th:first-child{border-radius:var(--radius) 0 0 0}
+thead th:last-child{border-radius:0 var(--radius) 0 0}
+tbody tr{border-bottom:1px solid var(--border);transition:background var(--transition)}
+tbody tr:nth-child(even){background:#f8fafc}
+tbody tr:hover{background:#eef4fb;cursor:pointer}
+tbody td{padding:.75rem 1rem;color:var(--text);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+.td-actions{display:flex;gap:.4rem;align-items:center;justify-content:center}
+.table-empty{text-align:center;padding:3rem 1rem;color:var(--text-muted);font-style:italic}
+
+/* forms */
+.form-group{margin-bottom:1.1rem}
+.form-label{display:block;margin-bottom:.35rem;font-size:var(--fs-sm);font-weight:600;color:var(--secondary)}
+.form-control{width:100%;padding:.55rem .85rem;font-size:var(--fs-base);border:1.5px solid var(--border);border-radius:var(--radius);background:#fff;color:var(--text);transition:border-color var(--transition),box-shadow var(--transition);outline:none}
+.form-control:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(39,174,96,.18)}
+.form-control.is-invalid{border-color:var(--danger);box-shadow:0 0 0 3px rgba(192,57,43,.15)}
+.form-error{margin-top:.3rem;font-size:.75rem;color:var(--danger)}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}
+.form-actions{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border);flex-wrap:wrap}
+
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:500;padding:1rem;opacity:0;visibility:hidden;transition:opacity var(--transition),visibility var(--transition)}
+.modal-overlay.is-open{opacity:1;visibility:visible}
+.modal{background:var(--bg-card);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);width:100%;max-width:480px;transform:translateY(20px);transition:transform var(--transition)}
+.modal-overlay.is-open .modal{transform:translateY(0)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border)}
+.modal-title{font-size:var(--fs-lg);font-weight:700;color:var(--primary)}
+.modal-close{background:none;border:none;font-size:1.2rem;color:var(--text-muted);cursor:pointer;padding:.25rem;border-radius:var(--radius)}
+.modal-close:hover{color:var(--danger);background:#fef2f2}
+.modal-body{padding:1.5rem}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.75rem}
+
+/* toast */
+#toast-container{position:fixed;top:calc(var(--topbar-h) + .75rem);right:1.25rem;z-index:9999;display:flex;flex-direction:column;gap:.5rem;pointer-events:none}
+.toast{display:flex;align-items:flex-start;gap:.75rem;padding:.85rem 1.1rem;border-radius:var(--radius);box-shadow:var(--shadow-lg);font-size:var(--fs-sm);font-weight:500;min-width:260px;max-width:360px;background:#fff;border-left:4px solid var(--border);pointer-events:all;animation:toastIn .3s ease forwards}
+.toast.toast-success{border-left-color:var(--success)}
+.toast.toast-danger{border-left-color:var(--danger)}
+.toast.toast-warning{border-left-color:var(--warning)}
+.toast-icon{font-size:1rem;margin-top:1px;flex-shrink:0}
+.toast-body{flex:1}
+.toast-msg{color:var(--text-muted)}
+.toast.toast-hide{animation:toastOut .3s ease forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(30px)}}
+
+/* utils */
+.text-muted{color:var(--text-muted)}.text-danger{color:var(--danger)}.text-success{color:var(--success)}
+.mt-2{margin-top:1rem}.hidden{display:none!important}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.page-header{margin-bottom:1.5rem}
+.page-header h1{font-size:var(--fs-xl);font-weight:700;color:var(--primary)}
+.page-header p{color:var(--text-muted);margin-top:.25rem;font-size:var(--fs-sm)}
+.view{animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* login specifics */
+.login-page{margin-left:0!important;margin-top:0!important;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.25rem;background:var(--bg-light)}
+.badge-count{font-size:var(--fs-sm);font-weight:400;color:var(--text-muted);background:var(--bg-light);border:1px solid var(--border);padding:2px 10px;border-radius:999px;margin-left:6px}
+
+/* demo nav tabs */
+.demo-nav{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#fff;border:1px solid var(--border);border-radius:999px;padding:.4rem .6rem;display:flex;gap:.5rem;z-index:9999;box-shadow:var(--shadow-lg)}
+.demo-tab{padding:.4rem 1rem;border-radius:999px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;transition:all .15s;color:var(--text-muted);background:none}
+.demo-tab.active{background:var(--primary);color:#fff}
+
+/* Sidebar search input fix */
+.sidebar input{width:calc(100% - 2.5rem);margin:0 1.25rem;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);color:#fff;font-size:var(--fs-sm);padding:.5rem .75rem;outline:none;transition:border-color .2s}
+.sidebar input:focus{border-color:var(--accent)}
+.sidebar input::placeholder{color:rgba(255,255,255,.35)}
+.sidebar-bottom{padding:1.25rem;margin-top:auto}
+</style>
+</head>
+<body>
+
+<!-- DEMO NAV -->
+<div class="demo-nav">
+  <button class="demo-tab active" onclick="showScreen('dashboard')">Dashboard</button>
+  <button class="demo-tab" onclick="showScreen('create')">Nuova Azienda</button>
+  <button class="demo-tab" onclick="showScreen('login')">Login</button>
+  <button class="demo-tab" onclick="showScreen('register')">Registrazione</button>
+</div>
+
+<!-- ════════ SCREEN: DASHBOARD ════════ -->
+<div id="screen-dashboard">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span style="color:var(--accent)">◈</span>
+      FSL <span class="logo-accent">Panel</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Operazioni</div>
+      <a class="active" onclick="return false">
+        <span class="nav-icon">≡</span> Elenco Aziende
+      </a>
+      <a onclick="showScreen('create');return false">
+        <span class="nav-icon">+</span> Nuova Azienda
+      </a>
+      <div class="sidebar-section-label" style="margin-top:.75rem">Ricerca</div>
+      <input type="text" placeholder="Cerca per nome…" oninput="filterDemo(this.value)"/>
+      <div class="sidebar-section-label" style="margin-top:.75rem">Statistiche</div>
+      <div style="padding:0 1.25rem">
+        <div style="display:flex;justify-content:space-between;font-size:var(--fs-sm);color:rgba(255,255,255,.6);padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.08)">
+          <span>Totale</span><span style="color:var(--accent);font-weight:700">4</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:var(--fs-sm);color:rgba(255,255,255,.6);padding:.4rem 0">
+          <span>Sedi uniche</span><span style="color:var(--accent);font-weight:700">3</span>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-bottom">
+      <a href="#" onclick="showToast('Logout simulato','warn');return false"
+         style="display:flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:var(--radius);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-size:var(--fs-sm);font-weight:600;transition:all .15s"
+         onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.06)'">
+        ⏻ Esci
+      </a>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <span class="topbar-title">Elenco Aziende</span>
+    <div class="topbar-right">
+      <span style="font-size:var(--fs-sm);color:var(--text-muted)">🟢 DB connesso</span>
+      <div class="user-badge">
+        <div class="avatar">M</div>
+        <span>mario_rossi</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1.5rem">
+      <div>
+        <h1 style="font-size:var(--fs-xl);font-weight:700;color:var(--primary)">
+          Aziende <span class="badge-count" id="demo-count">4</span>
+        </h1>
+        <p class="text-muted" style="font-size:var(--fs-sm);margin-top:.2rem">Gestione anagrafica aziende</p>
+      </div>
+      <button class="btn btn-primary" onclick="showScreen('create')">+ Aggiungi Azienda</button>
+    </div>
+
+    <div class="card" style="padding:0">
+      <div class="table-wrapper" style="border:none;border-radius:var(--radius-lg)">
+        <table id="demo-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Ragione Sociale</th>
+              <th>P.IVA</th>
+              <th>Sede Legale</th>
+              <th>Sede Operativa</th>
+              <th style="text-align:center">Azioni</th>
+            </tr>
+          </thead>
+          <tbody id="demo-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ════════ SCREEN: CREATE ════════ -->
+<div id="screen-create" class="hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span style="color:var(--accent)">◈</span>
+      FSL <span class="logo-accent">Panel</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Operazioni</div>
+      <a onclick="showScreen('dashboard');return false"><span class="nav-icon">≡</span> Elenco Aziende</a>
+      <a class="active" onclick="return false"><span class="nav-icon">+</span> Nuova Azienda</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <a href="#" onclick="showToast('Logout simulato','warn');return false"
+         style="display:flex;align-items:center;gap:.5rem;padding:.6rem .9rem;border-radius:var(--radius);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-size:var(--fs-sm);font-weight:600"
+         onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.06)'">
+        ⏻ Esci
+      </a>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <span class="topbar-title">Nuova Azienda</span>
+    <div class="topbar-right">
+      <div class="user-badge"><div class="avatar">M</div><span>mario_rossi</span></div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Nuova Azienda</h1>
+      <p>Compila i campi per aggiungere un'azienda al sistema</p>
+    </div>
+    <div class="card" style="max-width:720px">
+      <div class="form-row">
+        <div class="form-group" style="grid-column:1/-1">
+          <label class="form-label">Ragione Sociale <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" type="text" id="c-ragione" placeholder="es. Acme S.r.l."/>
+          <span class="form-error" id="err-c-ragione"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Partita IVA <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" type="text" id="c-piva" placeholder="11 cifre" maxlength="11"/>
+          <span class="form-error" id="err-c-piva"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sede Legale <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" type="text" id="c-sl" placeholder="es. Milano"/>
+          <span class="form-error" id="err-c-sl"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sede Operativa <span style="color:var(--danger)">*</span></label>
+          <input class="form-control" type="text" id="c-so" placeholder="es. Roma"/>
+          <span class="form-error" id="err-c-so"></span>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="simulateSave()">Salva Azienda</button>
+        <button class="btn btn-secondary" onclick="showScreen('dashboard')">Annulla</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ════════ SCREEN: LOGIN ════════ -->
+<div id="screen-login" class="hidden">
+  <div class="login-page">
+    <section class="card" style="width:100%;max-width:420px">
+      <div style="margin-bottom:1.25rem">
+        <h1 style="font-size:var(--fs-xl);font-weight:700;color:var(--primary);display:flex;align-items:center;gap:.5rem">
+          <span style="color:var(--accent);font-size:1.3rem">◈</span>
+          FSL <span style="color:var(--accent)">Panel</span>
+        </h1>
+        <p class="text-muted" style="font-size:var(--fs-sm);margin-top:.25rem">Effettua il login per accedere all'area riservata.</p>
+      </div>
+
+      <div id="login-error" class="hidden" style="margin-bottom:1rem;background:#fee2e2;padding:.6rem 1rem;border-radius:var(--radius);border-left:4px solid var(--danger);color:var(--danger);font-size:var(--fs-sm)">
+        Credenziali non valide.
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-control" type="text" id="login-user" placeholder="Il tuo username"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-control" type="password" id="login-pass" placeholder="••••••••"/>
+      </div>
+      <div style="margin-top:1rem">
+        <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center" onclick="simulateLogin()">
+          Accedi
+        </button>
+      </div>
+      <p class="text-muted mt-2" style="text-align:center;font-size:var(--fs-sm)">
+        Non hai un account?
+        <a href="#" onclick="showScreen('register');return false" style="color:var(--accent);font-weight:600">Registrati</a>
+      </p>
+    </section>
+  </div>
+</div>
+
+<!-- ════════ SCREEN: REGISTER ════════ -->
+<div id="screen-register" class="hidden">
+  <div class="login-page">
+    <section class="card" style="width:100%;max-width:440px">
+      <div style="margin-bottom:1.25rem">
+        <h1 style="font-size:var(--fs-xl);font-weight:700;color:var(--primary);display:flex;align-items:center;gap:.5rem">
+          <span style="color:var(--accent);font-size:1.3rem">◈</span>
+          FSL <span style="color:var(--accent)">Panel</span>
+        </h1>
+        <p class="text-muted" style="font-size:var(--fs-sm);margin-top:.25rem">Crea un account per accedere al pannello.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Username <span style="color:var(--danger)">*</span></label>
+        <input class="form-control" type="text" placeholder="Scegli uno username"/>
+        <span class="text-muted" style="font-size:.75rem">3–50 caratteri: lettere, numeri, _ . -</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password <span style="color:var(--danger)">*</span></label>
+        <input class="form-control" type="password" id="reg-pw" placeholder="Almeno 8 caratteri" oninput="updateStrength(this.value)"/>
+        <div style="height:4px;background:var(--border);border-radius:2px;margin-top:6px;overflow:hidden">
+          <div id="str-fill" style="height:100%;width:0;border-radius:2px;transition:width .3s,background .3s"></div>
+        </div>
+        <span id="str-label" style="font-size:.72rem;color:var(--text-muted);display:block;margin-top:2px;min-height:16px"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Conferma Password <span style="color:var(--danger)">*</span></label>
+        <input class="form-control" type="password" placeholder="Ripeti la password"/>
+        <span class="form-error" id="reg-err"></span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:1rem">
+        <span class="text-muted" style="font-size:.75rem" id="r-len">✗ 8+ caratteri</span>
+        <span class="text-muted" style="font-size:.75rem" id="r-up">✗ Una maiuscola</span>
+        <span class="text-muted" style="font-size:.75rem" id="r-num">✗ Un numero</span>
+      </div>
+      <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center" onclick="showToast('Registrazione simulata ✓')">
+        Crea Account
+      </button>
+      <p class="text-muted mt-2" style="text-align:center;font-size:var(--fs-sm)">
+        Hai già un account?
+        <a href="#" onclick="showScreen('login');return false" style="color:var(--accent);font-weight:600">Accedi</a>
+      </p>
+    </section>
+  </div>
+</div>
+
+<!-- MODAL eliminazione -->
+<div class="modal-overlay" id="del-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">⚠ Conferma Eliminazione</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Stai per eliminare <strong id="modal-name"></strong>.<br/>L'operazione è irreversibile.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="simulateDelete()">Elimina</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+const AZIENDE = [
+  {id:1, rs:'Acme S.r.l.', piva:'01234567890', sl:'Milano', so:'Roma'},
+  {id:2, rs:'Beta Systems S.p.A.', piva:'09876543210', sl:'Torino', so:'Milano'},
+  {id:3, rs:'Gamma Tech S.r.l.s.', piva:'11122233344', sl:'Roma', so:'Napoli'},
+  {id:4, rs:'Delta Solutions', piva:'55566677788', sl:'Milano', so:'Firenze'},
+];
+let displayAziende = [...AZIENDE];
+let pendingId = null;
+
+function renderTable(list) {
+  const tbody = document.getElementById('demo-tbody');
+  const count = document.getElementById('demo-count');
+  if(count) count.textContent = list.length;
+  if(!list.length){
+    tbody.innerHTML='<tr><td colspan="6" class="table-empty">Nessuna azienda trovata</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(a=>`
+    <tr onclick="showDetail(${a.id})">
+      <td>${a.id}</td>
+      <td><strong>${a.rs}</strong></td>
+      <td style="font-family:monospace;font-size:.83rem">${a.piva}</td>
+      <td>${a.sl}</td>
+      <td>${a.so}</td>
+      <td onclick="event.stopPropagation()">
+        <div class="td-actions">
+          <button class="btn btn-info btn-sm" title="Modifica" onclick="showToast('Modifica: '+${a.id})">✎</button>
+          <button class="btn btn-danger btn-sm" title="Elimina" onclick="openDeleteModal(${a.id},'${a.rs}')">✕</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function filterDemo(q){
+  q=q.toLowerCase().trim();
+  displayAziende = q ? AZIENDE.filter(a=>
+    a.rs.toLowerCase().includes(q)||a.piva.includes(q)||
+    a.sl.toLowerCase().includes(q)||a.so.toLowerCase().includes(q)) : [...AZIENDE];
+  renderTable(displayAziende);
+}
+
+function showDetail(id){
+  const a = AZIENDE.find(x=>x.id===id);
+  if(!a) return;
+  showToast(`Dettaglio: ${a.rs}`,'info');
+}
+
+function openDeleteModal(id, name){
+  pendingId=id;
+  document.getElementById('modal-name').textContent=name;
+  document.getElementById('del-modal').classList.add('is-open');
+}
+function closeModal(){
+  document.getElementById('del-modal').classList.remove('is-open');
+  pendingId=null;
+}
+function simulateDelete(){
+  showToast('Azienda eliminata','warn');
+  closeModal();
+}
+document.getElementById('del-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+function simulateSave(){
+  const r=document.getElementById('c-ragione');
+  const p=document.getElementById('c-piva');
+  const sl=document.getElementById('c-sl');
+  const so=document.getElementById('c-so');
+  let ok=true;
+  [['c-ragione','err-c-ragione',2],['c-piva','err-c-piva',11],
+   ['c-sl','err-c-sl',2],['c-so','err-c-so',2]].forEach(([id,eid,min])=>{
+    const el=document.getElementById(id);
+    const err=document.getElementById(eid);
+    if(!el.value.trim()||el.value.trim().length<min){
+      el.classList.add('is-invalid');err.textContent='Campo obbligatorio';ok=false;
+    } else {el.classList.remove('is-invalid');err.textContent='';}
+  });
+  if(ok){showToast('Azienda creata ✓');showScreen('dashboard');}
+}
+
+function simulateLogin(){
+  const u=document.getElementById('login-user').value.trim();
+  const p=document.getElementById('login-pass').value;
+  const err=document.getElementById('login-error');
+  if(u==='admin'&&p==='admin'){
+    err.classList.add('hidden');
+    showToast('Login effettuato ✓');
+    setTimeout(()=>showScreen('dashboard'),600);
+  } else {err.classList.remove('hidden');}
+}
+
+function updateStrength(pw){
+  let score=0;
+  const rLen=document.getElementById('r-len');
+  const rUp=document.getElementById('r-up');
+  const rNum=document.getElementById('r-num');
+  const fill=document.getElementById('str-fill');
+  const label=document.getElementById('str-label');
+  const ok='color:var(--accent)'; const no='color:var(--text-muted)';
+  if(pw.length>=8){score++;rLen.style=ok;rLen.textContent='✓ 8+ caratteri';}
+  else{rLen.style=no;rLen.textContent='✗ 8+ caratteri';}
+  if(/[A-Z]/.test(pw)){score++;rUp.style=ok;rUp.textContent='✓ Una maiuscola';}
+  else{rUp.style=no;rUp.textContent='✗ Una maiuscola';}
+  if(/[0-9]/.test(pw)){score++;rNum.style=ok;rNum.textContent='✓ Un numero';}
+  else{rNum.style=no;rNum.textContent='✗ Un numero';}
+  if(/[^a-zA-Z0-9]/.test(pw))score++;
+  const pct=Math.min((score/4)*100,100);
+  const colors=['#c0392b','#f39c12','#f39c12','#27ae60','#27ae60'];
+  const labels=['','Debole','Discreta','Buona','Ottima'];
+  fill.style.cssText=`width:${pct}%;background:${colors[score]||colors[0]}`;
+  label.textContent=labels[score]||'';
+}
+
+function showScreen(name){
+  ['dashboard','create','login','register'].forEach(s=>{
+    document.getElementById('screen-'+s).classList.add('hidden');
+  });
+  document.getElementById('screen-'+name).classList.remove('hidden');
+  document.querySelectorAll('.demo-tab').forEach((t,i)=>{
+    const map=['dashboard','create','login','register'];
+    t.classList.toggle('active', map[i]===name);
+  });
+}
+
+function showToast(msg, type='success'){
+  const c=document.getElementById('toast-container');
+  const el=document.createElement('div');
+  const map={success:'toast-success',error:'toast-danger',warn:'toast-warning',info:'toast-info'};
+  el.className='toast '+(map[type]||'toast-success');
+  const icons={success:'✓',error:'✕',warn:'⚠',info:'ℹ'};
+  el.innerHTML=`<span class="toast-icon">${icons[type]||'✓'}</span><div class="toast-body"><p class="toast-msg">${msg}</p></div>`;
+  c.appendChild(el);
+  setTimeout(()=>{el.classList.add('toast-hide');setTimeout(()=>el.remove(),400);},3000);
+}
+
+// Init
+renderTable(AZIENDE);
+</script>
+</body>
+</html>
