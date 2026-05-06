@@ -1,0 +1,20 @@
+Struttura:
+
+script pubblici fondamentali:
+-api.php
+-api_session.php
+-config.php
+-global.css
+
+(da creare unici che riportano alla dashboard principale -> pagina Daniele o da creare)
+-login.php
+-auth.php
+-logout.php
+-registrati.php
+
+script singoli:
+
+index_specializzazione.php/.html (es. index_aziende.php)
+
+specifica.js
+middleware_specifica.php
