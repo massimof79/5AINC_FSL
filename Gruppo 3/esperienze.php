@@ -103,7 +103,7 @@ requireLoginPage('../login.php');
     <span class="topbar-title">Gestione Esperienze PCTO</span>
 
     <div class="topbar-right">
-      <span id="db-status" style="font-size:var(--fs-sm);color:var(--text-muted);">🟡 Connessione…</span>
+      <span id="db-status" style="font-size:var(--fs-sm);color:var(--text-muted);">Connessione…</span>
       <div class="user-badge">
         <div class="avatar"><?= strtoupper(substr($_SESSION['username'] ?? 'U', 0, 1)) ?></div>
         <span><?= htmlspecialchars($_SESSION['username'] ?? 'Utente', ENT_QUOTES, 'UTF-8') ?></span>
@@ -275,6 +275,7 @@ requireLoginPage('../login.php');
 
 
 <!-- ── Script ───────────────────────────────────────────── -->
+<script src="../icons/icons.js"></script>
 <script src="esperienze.js"></script>
 
 <script>

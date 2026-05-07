@@ -91,7 +91,7 @@ $username = htmlspecialchars((string) ($_SESSION['username'] ?? 'Utente'), ENT_Q
             title="Apri/chiudi menu" style="display:none">☰</button>
     <span class="topbar-title">Dashboard</span>
     <div class="topbar-right">
-      <span id="db-status" style="font-size:var(--fs-sm);color:var(--text-muted);">🟡 Connessione…</span>
+      <span id="db-status" style="font-size:var(--fs-sm);color:var(--text-muted);">Connessione…</span>
       <div class="user-badge">
         <div class="avatar"><?= strtoupper(substr($username, 0, 1)) ?></div>
         <span><?= $username ?></span>
@@ -155,6 +155,7 @@ $username = htmlspecialchars((string) ($_SESSION['username'] ?? 'Utente'), ENT_Q
 
 </div>
 
+<script src="icons/icons.js"></script>
 <script>
 const sidebar  = document.getElementById('sidebar');
 const btnToggle = document.getElementById('btn-toggle-sidebar');
@@ -166,13 +167,16 @@ function checkMobile() {
 window.addEventListener('resize', checkMobile);
 checkMobile();
 
+const dbEl = document.getElementById('db-status');
+if (dbEl) dbEl.innerHTML = `${ICONS.dbLoading} Connessione…`;
+
 fetch('api.php?entity=aziende', { credentials: 'same-origin' }).then(r => r.json()).then(j => {
   const el = document.getElementById('db-status');
   if (!el) return;
-  el.textContent = j.success ? '🟢 DB connesso' : '🔴 Errore DB';
+  el.innerHTML = j.success ? `${ICONS.dbOk} DB connesso` : `${ICONS.dbErr} Errore DB`;
 }).catch(() => {
   const el = document.getElementById('db-status');
-  if (el) el.textContent = '🔴 Errore DB';
+  if (el) el.innerHTML = `${ICONS.dbErr} Errore DB`;
 });
 </script>
 </body>

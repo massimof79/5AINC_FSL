@@ -191,6 +191,7 @@ $username = htmlspecialchars((string) ($_SESSION['username'] ?? 'Utente'), ENT_Q
   </div>
 </div>
 
+<script src="../icons/icons.js"></script>
 <script src="aziende.js"></script>
 <script>
   const btnToggle = document.getElementById('btn-toggle-sidebar');

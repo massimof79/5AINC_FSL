@@ -83,7 +83,7 @@
             title="Apri/chiudi menu" style="display:none">☰</button>
     <span class="topbar-title">Gestione Disponibilità</span>
     <div class="topbar-right">
-      <span id="db-status" style="font-size:var(--fs-sm);color:var(--text-muted);">🟡 Connessione…</span>
+      <span id="db-status" style="font-size:var(--fs-sm);color:var(--text-muted);">Connessione…</span>
       <div class="user-badge">
         <div class="avatar" id="user-avatar">U</div>
         <span id="user-name">Utente</span>
@@ -164,6 +164,7 @@
 
 <div id="toast-container"></div>
 
+<script src="../icons/icons.js"></script>
 <script>
 'use strict';
 
@@ -243,7 +244,7 @@ function renderTable(rows) {
       <td>${item.ora_inizio ?? ''}</td>
       <td>${item.ora_fine ?? ''}</td>
       <td style="text-align:center">
-        <button class="btn btn-danger btn-sm" onclick="elimina(${item.codice_disponibilita ?? item.id})">🗑️</button>
+        <button class="btn btn-danger btn-sm" onclick="elimina(${item.codice_disponibilita ?? item.id})">${ICONS.delete}</button>
       </td>
     </tr>`).join('');
 }
@@ -266,9 +267,9 @@ async function caricaDati() {
 function setDbStatus(state) {
   const el = document.getElementById('db-status');
   if (!el) return;
-  const map = { loading: ['🟡', 'Connessione…'], ok: ['🟢', 'DB connesso'], err: ['🔴', 'Errore DB'] };
+  const map = { loading: [ICONS.dbLoading, 'Connessione…'], ok: [ICONS.dbOk, 'DB connesso'], err: [ICONS.dbErr, 'Errore DB'] };
   const [icon, label] = map[state] || ['', '—'];
-  el.textContent = `${icon} ${label}`;
+  el.innerHTML = `${icon} ${label}`;
 }
 
 async function elimina(id) {

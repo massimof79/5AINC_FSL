@@ -226,12 +226,12 @@ function showToast(type, title, message, duration = 4000) {
     const container = document.getElementById('toast-container');
     if (!container) return;
 
-    const icons = { success: '✅', danger: '❌', warning: '⚠️', info: 'ℹ️' };
+    const icons = { success: ICONS.success, danger: ICONS.danger, warning: ICONS.warning, info: ICONS.info };
 
     const el = document.createElement('div');
     el.className = `toast toast-${type}`;
     el.innerHTML = `
-        <span class="toast-icon">${icons[type] ?? 'ℹ️'}</span>
+        <span class="toast-icon">${icons[type] ?? ICONS.info}</span>
         <div class="toast-body">
           <div class="toast-title">${escHtml(title)}</div>
           <div class="toast-msg">${escHtml(message)}</div>
@@ -266,9 +266,9 @@ function handleError(err, context = '') {
 function setDbStatus(state) {
     const el = document.getElementById('db-status');
     if (!el) return;
-    const map = { loading: ['🟡', 'Connessione…'], ok: ['🟢', 'DB connesso'], err: ['🔴', 'Errore DB'] };
+    const map = { loading: [ICONS.dbLoading, 'Connessione…'], ok: [ICONS.dbOk, 'DB connesso'], err: [ICONS.dbErr, 'Errore DB'] };
     const [icon, label] = map[state] || ['', '—'];
-    el.textContent = `${icon} ${label}`;
+    el.innerHTML = `${icon} ${label}`;
 }
 
 function escHtml(str) {

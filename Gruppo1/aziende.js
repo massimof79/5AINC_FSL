@@ -92,8 +92,8 @@ function renderTable(aziende) {
           <td>${esc(a.sede_operativa)}</td>
           <td>
             <div class="td-actions">
-              <button class="btn btn-warning btn-sm" title="Modifica" onclick="apriModal(${a.codice_azienda})">✏️</button>
-              <button class="btn btn-danger btn-sm" title="Elimina" onclick="confirmDelete(${a.codice_azienda})">🗑️</button>
+              <button class="btn btn-warning btn-sm" title="Modifica" onclick="apriModal(${a.codice_azienda})">Modifica</button>
+              <button class="btn btn-danger btn-sm" title="Elimina" onclick="confirmDelete(${a.codice_azienda})">Elimina</button>
             </div>
           </td>
         </tr>
@@ -214,20 +214,20 @@ function chiudiDeleteModal() {
 function setDbStatus(state) {
     const el = document.getElementById('db-status');
     if (!el) return;
-    const map = { loading: ['🟡', 'Connessione…'], ok: ['🟢', 'DB connesso'], err: ['🔴', 'Errore DB'] };
+    const map = { loading: [ICONS.dbLoading, 'Connessione…'], ok: [ICONS.dbOk, 'DB connesso'], err: [ICONS.dbErr, 'Errore DB'] };
     const [icon, label] = map[state] || ['', '—'];
-    el.textContent = `${icon} ${label}`;
+    el.innerHTML = `${icon} ${label}`;
 }
 
 function toast(msg, type = 'success') {
     const container = document.getElementById('toast-container');
     if (!container) return;
-    const icons = { success: '✅', error: '❌', warn: '⚠️' };
+    const icons = { success: ICONS.success, error: ICONS.danger, warn: ICONS.warning };
     const cssType = type === 'error' ? 'danger' : type === 'warn' ? 'warning' : 'success';
     const el = document.createElement('div');
     el.className = `toast toast-${cssType}`;
     el.innerHTML = `
-        <span class="toast-icon">${icons[type] ?? 'ℹ️'}</span>
+        <span class="toast-icon">${icons[type] ?? ICONS.info}</span>
         <div class="toast-body"><div class="toast-msg">${esc(msg)}</div></div>`;
     container.appendChild(el);
     const remove = () => {
