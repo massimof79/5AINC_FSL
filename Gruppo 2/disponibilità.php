@@ -15,11 +15,11 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../auth.php';
 
 // Redirect a login.php se non autenticato.
-requireLoginPage();
+requireLoginPage('../login.php');
 
 $username = htmlspecialchars(
     (string) ($_SESSION['username'] ?? 'Utente'),
@@ -34,48 +34,87 @@ $userInitial = strtoupper(substr($username, 0, 1)) ?: 'U';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Disponibilità — FSL Panel</title>
-  <link rel="stylesheet" href="global.css">
+  <link rel="stylesheet" href="../global.css">
 </head>
 <body>
 
 <div class="app-shell">
 
   <!-- ── Sidebar ─────────────────────────────────────────── -->
-  <aside class="sidebar">
-
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <span style="color:var(--accent); font-size:1.3rem;">◈</span>
-      FSL Panel
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+      </svg>
+      PCTO<span class="logo-accent">Connect</span>
     </div>
 
-    <nav>
-      <a href="esperienze.php">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-             viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Dashboard
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Gestione</div>
+      <a href="../Gruppo1/index_aziende.php">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+          </svg>
+        </span>Aziende
       </a>
-      <a href="index.php" class="active">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
-             viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Disponibilità
+      <a href="disponibilità.php" class="active">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+          </svg>
+        </span>Disponibilità
+      </a>
+      <a href="../Gruppo%203/esperienze.php">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 2.25H8.25A2.25 2.25 0 006 4.5v15A2.25 2.25 0 008.25 21.75h7.5a2.25 2.25 0 002.25-2.25V4.5a2.25 2.25 0 00-2.25-2.25z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 2.25V4.5H9V2.25m3 9h3m-3 3h3m-6-3h.008v.008H9v-.008zm0 3h.008v.008H9v-.008z" />
+          </svg>
+        </span>Esperienze
+      </a>
+      <div class="sidebar-section-label">Personale</div>
+      <a href="../Gruppo4/tutor_scolastici.html">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+          </svg>
+        </span>Tutor Scolastici
+      </a>
+      <a href="../Gruppo4/tutor_aziendali.html">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
+          </svg>
+        </span>Tutor Aziendali
+      </a>
+      <a href="../Gruppo4/studenti.html">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+          </svg>
+        </span>Studenti
+      </a>
+      <div class="sidebar-section-label">Sistema</div>
+      <a href="../logout.php">
+        <span class="nav-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+          </svg>
+        </span>Logout
       </a>
     </nav>
-
-    <div style="padding:1.25rem; margin-top:auto;">
-      <a href="logout.php" class="btn btn-secondary btn-sm"
-         style="width:100%; justify-content:center; color:rgba(255,255,255,0.7);">
-        ⏻ Esci
-      </a>
-    </div>
   </aside>
 
   <!-- ── Topbar ────────────────────────────────────────────── -->
   <header class="topbar">
+    <button class="btn btn-secondary btn-icon" id="btn-toggle-sidebar"
+            title="Apri/chiudi menu" style="display:none">☰</button>
     <span class="topbar-title">Gestione Disponibilità</span>
     <div class="topbar-right">
+      <span id="db-status" style="font-size:var(--fs-sm);color:var(--text-muted);">Connessione…</span>
       <div class="user-badge">
         <div class="avatar"><?= $userInitial ?></div>
         <span><?= $username ?></span>
