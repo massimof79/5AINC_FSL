@@ -6,7 +6,7 @@ script pubblici fondamentali:
 -config.php
 -global.css
 
-(da creare unici che riportano alla dashboard principale -> pagina Daniele o da creare)
+(da creare unici che riportano alla dashboard principale -> pagina Gruppo 3)
 -login.php
 -auth.php
 -logout.php

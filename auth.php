@@ -10,10 +10,10 @@ function isLoggedIn(): bool
     return !empty($_SESSION['user_id']);
 }
 
-function requireLoginPage(): void
+function requireLoginPage(string $loginUrl = 'login.php'): void
 {
     if (!isLoggedIn()) {
-        header('Location: login.php');
+        header('Location: ' . $loginUrl);
         exit;
     }
 }

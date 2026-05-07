@@ -1189,6 +1189,247 @@ class TutorScolasticiApi
 
 
 // ════════════════════════════════════════════════════════════
+// GRUPPO 4c — StudentiApi
+// ════════════════════════════════════════════════════════════
+
+class StudentiApi
+{
+    private PDO $pdo;
+
+    public function __construct()
+    {
+        try {
+            $this->pdo = getDbConnection();
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+            $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log('[FSL][StudentiApi] Connessione DB fallita: ' . $e->getMessage());
+            throw new RuntimeException('Impossibile connettersi al database.');
+        }
+    }
+
+    public function handleRequest(): void
+    {
+        $method   = $_SERVER['REQUEST_METHOD'];
+        $id       = isset($_GET['id'])       ? (int) $_GET['id']   : null;
+        $resource = $_GET['resource'] ?? null;
+
+        try {
+            if ($resource !== null) {
+                $this->handleResource($resource);
+            }
+
+            switch ($method) {
+                case 'GET':
+                    $id ? $this->getStudente($id) : $this->listStudenti();
+                    break;
+                case 'POST':
+                    $this->createStudente();
+                    break;
+                case 'PUT':
+                    $id
+                        ? $this->updateStudente($id)
+                        : $this->respond(false, null, 'ID mancante per PUT.', 400);
+                    break;
+                case 'DELETE':
+                    $id
+                        ? $this->deleteStudente($id)
+                        : $this->respond(false, null, 'ID mancante per DELETE.', 400);
+                    break;
+                default:
+                    $this->respond(false, null, 'Metodo HTTP non supportato.', 405);
+            }
+        } catch (PDOException $e) {
+            error_log('[FSL][StudentiApi] PDOException: ' . $e->getMessage());
+            $this->respond(false, null, 'Errore del database. Riprova più tardi.', 500);
+        } catch (JsonException $e) {
+            $this->respond(false, null, 'Errore di encoding JSON.', 500);
+        }
+    }
+
+    private function handleResource(string $resource): never
+    {
+        $allowed = ['esperienze', 'candidature'];
+        if (!in_array($resource, $allowed, true)) {
+            $this->respond(false, null, 'Risorsa non valida.', 400);
+        }
+
+        $rows = match ($resource) {
+            'esperienze' => $this->pdo
+                ->query('SELECT codice_esperienza AS id,
+                                CONCAT("Esp. ", codice_esperienza, " — ", periodo_effettivo) AS label
+                          FROM ESPERIENZA ORDER BY codice_esperienza DESC')
+                ->fetchAll(),
+            'candidature' => $this->pdo
+                ->query('SELECT codice_candidatura AS id,
+                                CONCAT("Cand. ", codice_candidatura, " — ", stato) AS label
+                          FROM CANDIDATURA ORDER BY codice_candidatura DESC')
+                ->fetchAll(),
+        };
+
+        $this->respond(true, $rows);
+    }
+
+    private function listStudenti(): never
+    {
+        $sql = <<<'SQL'
+            SELECT
+                s.codice_studente,
+                s.nome,
+                s.cognome,
+                s.data_di_nascita,
+                s.luogo_di_nascita,
+                s.indirizzo,
+                s.email,
+                s.classe,
+                s.indirizzo_di_studi,
+                s.codice_esperienza,
+                s.codice_candidatura,
+                c.stato AS stato_candidatura
+            FROM STUDENTE s
+            LEFT JOIN CANDIDATURA c ON c.codice_candidatura = s.codice_candidatura
+            ORDER BY s.codice_studente ASC
+        SQL;
+
+        $rows = $this->pdo->query($sql)->fetchAll();
+        $this->respond(true, $rows);
+    }
+
+    private function getStudente(int $id): never
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT codice_studente, nome, cognome, data_di_nascita, luogo_di_nascita,
+                    indirizzo, email, classe, indirizzo_di_studi,
+                    codice_esperienza, codice_candidatura
+             FROM STUDENTE WHERE codice_studente = :id'
+        );
+        $stmt->execute([':id' => $id]);
+        $row = $stmt->fetch();
+        if (!$row) {
+            $this->respond(false, null, "Studente con ID {$id} non trovato.", 404);
+        }
+        $this->respond(true, $row);
+    }
+
+    private function createStudente(): never
+    {
+        $fields = $this->validateFields($this->parseBody());
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO STUDENTE
+                (nome, cognome, data_di_nascita, luogo_di_nascita,
+                 indirizzo, email, classe, indirizzo_di_studi,
+                 codice_esperienza, codice_candidatura)
+             VALUES
+                (:nome, :cognome, :data_di_nascita, :luogo_di_nascita,
+                 :indirizzo, :email, :classe, :indirizzo_di_studi,
+                 :codice_esperienza, :codice_candidatura)'
+        );
+        $stmt->execute($fields);
+        $this->respond(true, ['codice_studente' => (int) $this->pdo->lastInsertId()], 'Studente creato con successo.', 201);
+    }
+
+    private function updateStudente(int $id): never
+    {
+        $this->ensureExists($id);
+        $fields = $this->validateFields($this->parseBody());
+        $stmt = $this->pdo->prepare(
+            'UPDATE STUDENTE SET
+                nome = :nome, cognome = :cognome,
+                data_di_nascita = :data_di_nascita, luogo_di_nascita = :luogo_di_nascita,
+                indirizzo = :indirizzo, email = :email,
+                classe = :classe, indirizzo_di_studi = :indirizzo_di_studi,
+                codice_esperienza = :codice_esperienza, codice_candidatura = :codice_candidatura
+             WHERE codice_studente = :id'
+        );
+        $stmt->execute(array_merge($fields, [':id' => $id]));
+        $this->respond(true, ['codice_studente' => $id], 'Studente aggiornato con successo.');
+    }
+
+    private function deleteStudente(int $id): never
+    {
+        $this->ensureExists($id);
+        $stmt = $this->pdo->prepare('DELETE FROM STUDENTE WHERE codice_studente = :id');
+        $stmt->execute([':id' => $id]);
+        $this->respond(true, null, 'Studente eliminato con successo.');
+    }
+
+    private function ensureExists(int $id): void
+    {
+        $stmt = $this->pdo->prepare('SELECT codice_studente FROM STUDENTE WHERE codice_studente = :id');
+        $stmt->execute([':id' => $id]);
+        if (!$stmt->fetch()) {
+            $this->respond(false, null, "Studente con ID {$id} non trovato.", 404);
+        }
+    }
+
+    private function parseBody(): array
+    {
+        $raw = file_get_contents('php://input');
+        if ($raw === false || trim($raw) === '') {
+            $this->respond(false, null, 'Body della richiesta vuoto.', 400);
+        }
+        $data = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+        if (!is_array($data)) {
+            $this->respond(false, null, 'Body non è un oggetto JSON valido.', 400);
+        }
+        return $data;
+    }
+
+    private function validateFields(array $body): array
+    {
+        $errors           = [];
+        $nome             = trim((string) ($body['nome']               ?? ''));
+        $cognome          = trim((string) ($body['cognome']            ?? ''));
+        $dataNascita      = trim((string) ($body['data_di_nascita']    ?? ''));
+        $luogoNascita     = trim((string) ($body['luogo_di_nascita']   ?? ''));
+        $indirizzo        = trim((string) ($body['indirizzo']          ?? ''));
+        $email            = trim((string) ($body['email']              ?? ''));
+        $classe           = trim((string) ($body['classe']             ?? ''));
+        $indirizzoStudi   = trim((string) ($body['indirizzo_di_studi'] ?? ''));
+        $codiceEsperienza = ($body['codice_esperienza']  ?? null) !== null ? (int) $body['codice_esperienza']  : null;
+        $codiceCandidatura= ($body['codice_candidatura'] ?? null) !== null ? (int) $body['codice_candidatura'] : null;
+
+        if ($nome           === '') $errors[] = 'nome è obbligatorio.';
+        if ($cognome        === '') $errors[] = 'cognome è obbligatorio.';
+        if ($dataNascita    === '') $errors[] = 'data_di_nascita è obbligatoria.';
+        if ($luogoNascita   === '') $errors[] = 'luogo_di_nascita è obbligatorio.';
+        if ($indirizzo      === '') $errors[] = 'indirizzo è obbligatorio.';
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'email non valida.';
+        if ($classe         === '') $errors[] = 'classe è obbligatoria.';
+        if ($indirizzoStudi === '') $errors[] = 'indirizzo_di_studi è obbligatorio.';
+
+        if ($errors) {
+            $this->respond(false, ['errors' => $errors], implode(' | ', $errors), 422);
+        }
+
+        return [
+            ':nome'               => $nome,
+            ':cognome'            => $cognome,
+            ':data_di_nascita'    => $dataNascita,
+            ':luogo_di_nascita'   => $luogoNascita,
+            ':indirizzo'          => $indirizzo,
+            ':email'              => $email,
+            ':classe'             => $classe,
+            ':indirizzo_di_studi' => $indirizzoStudi,
+            ':codice_esperienza'  => $codiceEsperienza,
+            ':codice_candidatura' => $codiceCandidatura,
+        ];
+    }
+
+    private function respond(bool $success, mixed $data, string $message = '', int $code = 200): never
+    {
+        http_response_code($code);
+        echo json_encode(
+            ['success' => $success, 'message' => $message, 'data' => $data],
+            JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE
+        );
+        exit;
+    }
+}
+
+
+// ════════════════════════════════════════════════════════════
 // ENTRY POINT — Router principale
 // Eseguito SOLO se api.php viene chiamato direttamente.
 // Quando un middleware fa require_once 'api.php', questo blocco
@@ -1205,6 +1446,7 @@ if (basename(__FILE__) === basename($_SERVER['SCRIPT_FILENAME'])) {
         'esperienze'       => EsperienzeApi::class,
         'tutor_aziendali'  => TutorAziendaliApi::class,
         'tutor_scolastici' => TutorScolasticiApi::class,
+        'studenti'         => StudentiApi::class,
     ];
 
     if (!isset($entityMap[$entity])) {

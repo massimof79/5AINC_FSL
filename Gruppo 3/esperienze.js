@@ -11,6 +11,7 @@ const API_URL = './api_esperienze.php';
 
 // ── Stato locale ──────────────────────────────────────────────
 let currentEditId = null;   // null = creazione, number = modifica
+let allEsperienze = [];
 
 // ── Riferimenti DOM ───────────────────────────────────────────
 let tableBody, modalOverlay, modalTitle, formEsperienza,
@@ -82,13 +83,29 @@ class ApiError extends Error {
 //  READ — carica e renderizza la tabella
 // ════════════════════════════════════════════════════════════
 
+function filterTable() {
+    const q = (document.getElementById('search-input')?.value ?? '').toLowerCase().trim();
+    const filtered = q
+        ? allEsperienze.filter(r =>
+            String(r.periodo_effettivo ?? '').toLowerCase().includes(q) ||
+            String(r.numero_studenti ?? '').includes(q) ||
+            String(r.codice_esperienza ?? '').includes(q)
+          )
+        : allEsperienze;
+    renderTable(filtered);
+}
+
 async function loadEsperienze() {
     setTableLoading(true);
+    setDbStatus('loading');
     try {
         const { data } = await apiFetch(API_URL);
-        renderTable(data ?? []);
+        allEsperienze = data ?? [];
+        renderTable(allEsperienze);
+        setDbStatus('ok');
     } catch (err) {
         handleError(err, 'Caricamento esperienze');
+        setDbStatus('err');
         tableBody.innerHTML = `
             <tr>
               <td colspan="9" class="table-empty text-danger">
@@ -245,7 +262,7 @@ async function handleFormSubmit(e) {
             showToast('danger', 'Dati non validi', err.message, 6000);
         } else if (err.status === 401) {
             showToast('danger', 'Sessione scaduta', 'Verrai reindirizzato al login…', 3000);
-            setTimeout(() => window.location.href = 'login.php', 3000);
+            setTimeout(() => window.location.href = '../login.php', 3000);
         } else {
             handleError(err, 'Salvataggio');
         }
@@ -390,7 +407,7 @@ function handleError(err, context = '') {
 
     if (err.status === 401) {
         showToast('danger', 'Sessione scaduta', 'Verrai reindirizzato al login…', 3000);
-        setTimeout(() => window.location.href = 'login.php', 3000);
+        setTimeout(() => window.location.href = '../login.php', 3000);
     } else {
         showToast('danger', 'Errore', err.message || 'Si è verificato un errore imprevisto.');
     }
@@ -399,6 +416,14 @@ function handleError(err, context = '') {
 // ════════════════════════════════════════════════════════════
 //  UTILITY — Escape HTML (prevenzione XSS)
 // ════════════════════════════════════════════════════════════
+
+function setDbStatus(state) {
+    const el = document.getElementById('db-status');
+    if (!el) return;
+    const map = { loading: ['🟡', 'Connessione…'], ok: ['🟢', 'DB connesso'], err: ['🔴', 'Errore DB'] };
+    const [icon, label] = map[state] || ['', '—'];
+    el.textContent = `${icon} ${label}`;
+}
 
 function escHtml(str) {
     if (str == null) return '';

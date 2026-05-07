@@ -1,8 +1,9 @@
 'use strict';
 
-const API_URL = './api_studenti.php';
-const SESSION_URL = './api_session.php';
+const API_URL = '../api.php?entity=studenti';
+const SESSION_URL = '../api_session.php';
 let currentEditId = null;
+let allRows = [];
 
 let tableBody, modalOverlay, modalTitle, formEntity,
     btnNuova, btnChiudiModal, btnAnnulla, spinnerEl;
@@ -40,7 +41,7 @@ async function loadSessionBadge() {
         const json = await response.json();
 
         if (!response.ok || !json.success) {
-            window.location.href = 'login.php';
+            window.location.href = '../login.php';
             return;
         }
 
@@ -50,7 +51,7 @@ async function loadSessionBadge() {
         if (userNameEl) userNameEl.textContent = username;
         if (userAvatarEl) userAvatarEl.textContent = username.charAt(0).toUpperCase() || 'U';
     } catch {
-        window.location.href = 'login.php';
+        window.location.href = '../login.php';
     }
 }
 
@@ -81,13 +82,31 @@ class ApiError extends Error {
     }
 }
 
+function filterTable() {
+    const q = (document.getElementById('search-input')?.value ?? '').toLowerCase().trim();
+    const filtered = q
+        ? allRows.filter(r =>
+            String(r.nome ?? '').toLowerCase().includes(q) ||
+            String(r.cognome ?? '').toLowerCase().includes(q) ||
+            String(r.email ?? '').toLowerCase().includes(q) ||
+            String(r.classe ?? '').toLowerCase().includes(q) ||
+            String(r.indirizzo_di_studi ?? '').toLowerCase().includes(q)
+          )
+        : allRows;
+    renderTable(filtered);
+}
+
 async function loadRows() {
     setTableLoading(true);
+    setDbStatus('loading');
     try {
         const { data } = await apiFetch(API_URL);
-        renderTable(data ?? []);
+        allRows = data ?? [];
+        renderTable(allRows);
+        setDbStatus('ok');
     } catch (err) {
         handleError(err, 'Caricamento studenti');
+        setDbStatus('err');
         tableBody.innerHTML = `<tr><td colspan="12" class="table-empty text-danger">Impossibile caricare i dati. ${escHtml(err.message)}</td></tr>`;
     } finally {
         setTableLoading(false);
@@ -134,13 +153,13 @@ async function apriModal(id) {
     formEntity.reset();
 
     await Promise.all([
-        populateSelect('sel-esperienza', `${API_URL}?resource=esperienze`),
-        populateSelect('sel-candidatura', `${API_URL}?resource=candidature`),
+        populateSelect('sel-esperienza', `${API_URL}&resource=esperienze`),
+        populateSelect('sel-candidatura', `${API_URL}&resource=candidature`),
     ]);
 
     if (id) {
         try {
-            const { data } = await apiFetch(`${API_URL}?id=${id}`);
+            const { data } = await apiFetch(`${API_URL}&id=${id}`);
             fillForm(data);
         } catch (err) {
             handleError(err, 'Caricamento studente');
@@ -172,7 +191,7 @@ async function handleFormSubmit(e) {
 
     try {
         const result = currentEditId
-            ? await apiFetch(`${API_URL}?id=${currentEditId}`, { method: 'PUT', body: payload })
+            ? await apiFetch(`${API_URL}&id=${currentEditId}`, { method: 'PUT', body: payload })
             : await apiFetch(API_URL, { method: 'POST', body: payload });
 
         showToast('success', 'Operazione completata', result.message);
@@ -190,7 +209,7 @@ async function eliminaRiga(id) {
     if (!confirm(`Eliminare lo studente #${id}?`)) return;
 
     try {
-        const result = await apiFetch(`${API_URL}?id=${id}`, { method: 'DELETE' });
+        const result = await apiFetch(`${API_URL}&id=${id}`, { method: 'DELETE' });
         showToast('success', 'Eliminato', result.message);
         loadRows();
     } catch (err) {
@@ -280,10 +299,18 @@ function handleError(err, context = '') {
 
     if (err.status === 401) {
         showToast('danger', 'Sessione scaduta', 'Verrai reindirizzato al login...', 2000);
-        setTimeout(() => window.location.href = 'login.php', 2000);
+        setTimeout(() => window.location.href = '../login.php', 2000);
     } else {
         showToast('danger', 'Errore', err.message || 'Errore imprevisto.');
     }
+}
+
+function setDbStatus(state) {
+    const el = document.getElementById('db-status');
+    if (!el) return;
+    const map = { loading: ['🟡', 'Connessione…'], ok: ['🟢', 'DB connesso'], err: ['🔴', 'Errore DB'] };
+    const [icon, label] = map[state] || ['', '—'];
+    el.textContent = `${icon} ${label}`;
 }
 
 function escHtml(str) {

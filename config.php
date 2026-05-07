@@ -1,39 +1,63 @@
 <?php
 /**
- * db_conn.php — FSL Panel · Connessione PDO
+ * config.php
+ * Connessione PDO al database condiviso del progetto.
+ * Progetto: 5AINC_FSL
  *
- * Espone SOLO la funzione getDbConnection().
- * NON chiama session_start() — la gestione sessione
- * è responsabilità esclusiva di sessioni_init.php.
+ * Questo file espone una singola variabile: $pdo (istanza PDO).
+ * Viene incluso tramite require_once da tutte le API dei gruppi.
+ *
+ * NON versionare questo file con credenziali reali su repository pubblici.
  */
 
 declare(strict_types=1);
 
-define('DB_HOST',    'localhost');
-define('DB_NAME',    '5ainc_fsl');
-define('DB_USER',    'root');
-define('DB_PASS',    '');
+// ── Parametri di connessione ─────────────────────────────────
+define('DB_HOST',    '127.0.0.1');
+define('PORT',       '3307');
+define('DB_NAME',    '5AINC_FSL');
+define('DB_USER',    'root');       // modificare con l'utente del proprio ambiente
+define('DB_PASS',    '');           // modificare con la password del proprio ambiente
 define('DB_CHARSET', 'utf8mb4');
 
-function getDbConnection(): PDO
-{
-    static $pdo = null;
+// ── DSN ──────────────────────────────────────────────────────
+$dsn = sprintf(
+    'mysql:host=%s;port=%s;dbname=%s;charset=%s',
+    DB_HOST,
+    PORT,
+    DB_NAME,
+    DB_CHARSET
+);
 
-    if ($pdo !== null) {
+// ── Opzioni PDO ───────────────────────────────────────────────
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,   // lancia PDOException sugli errori
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,         // fetch come array associativo
+    PDO::ATTR_EMULATE_PREPARES   => false,                    // prepared statements nativi
+    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
+];
+
+// ── Istanza PDO ───────────────────────────────────────────────
+try {
+    $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+} catch (PDOException $e) {
+    // Non esporre dettagli interni: logga e termina
+    error_log('[config] Connessione al database fallita: ' . $e->getMessage());
+    http_response_code(500);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode([
+        'success' => false,
+        'message' => 'Impossibile connettersi al database. Riprova più tardi.',
+        'data'    => null,
+    ]);
+    exit;
+}
+
+// ── Compatibilità: espone anche getDbConnection() ─────────────
+// Necessario per api.php (classe AziendeApi) e aziende_middleware.php
+if (!function_exists('getDbConnection')) {
+    function getDbConnection(): PDO {
+        global $pdo;
         return $pdo;
     }
-
-    $dsn = sprintf(
-        'mysql:host=%s;dbname=%s;charset=%s',
-        DB_HOST, DB_NAME, DB_CHARSET
-    );
-
-    $pdo = new PDO($dsn, DB_USER, DB_PASS, [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4",
-    ]);
-
-    return $pdo;
 }

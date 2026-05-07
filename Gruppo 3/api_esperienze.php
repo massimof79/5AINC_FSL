@@ -19,8 +19,8 @@
 declare(strict_types=1);
 
 // ── Sessione e autenticazione (Gruppo 4) ─────────────────────
-require_once __DIR__ . '/auth.php';    // isLoggedIn, requireLoginApi
-require_once __DIR__ . '/config.php';  // $pdo
+require_once __DIR__ . '/../auth.php';    // isLoggedIn, requireLoginApi
+require_once __DIR__ . '/../config.php';  // $pdo
 
 // ── Intestazioni JSON ────────────────────────────────────────
 header('Content-Type: application/json; charset=utf-8');

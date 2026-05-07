@@ -21,8 +21,8 @@ header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Cache-Control: no-store, no-cache, must-revalidate');
 
 // ── Dipendenze ────────────────────────────────────────────────
-require_once __DIR__ . '/auth.php';   // gestione sessioni
-require_once __DIR__ . '/api.php';    // espone la classe AziendeApi
+require_once __DIR__ . '/../auth.php';   // gestione sessioni
+require_once __DIR__ . '/../api.php';    // espone la classe AziendeApi
 
 // ── Verifica autenticazione ───────────────────────────────────
 requireLoginApi();
