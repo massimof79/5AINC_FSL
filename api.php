@@ -320,7 +320,10 @@ class DisponibilitaApi
 
     public function getAll(): array
     {
-        $stmt = $this->pdo->query('SELECT * FROM disponibilita');
+        $stmt = $this->pdo->query(
+            'SELECT codice_disponibilita AS id, periodo_previsto, descrizione
+             FROM disponibilita ORDER BY codice_disponibilita ASC'
+        );
         return $stmt->fetchAll();
     }
 
@@ -328,7 +331,10 @@ class DisponibilitaApi
 
     public function getOne(int $id): ?array
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM disponibilita WHERE id = :id LIMIT 1');
+        $stmt = $this->pdo->prepare(
+            'SELECT codice_disponibilita AS id, periodo_previsto, descrizione
+             FROM disponibilita WHERE codice_disponibilita = :id LIMIT 1'
+        );
         $stmt->execute([':id' => $id]);
         $row = $stmt->fetch();
         return $row ?: null;
@@ -336,19 +342,28 @@ class DisponibilitaApi
 
     // ── CREATE ───────────────────────────────────────────────
 
-    public function create(string $data, string $oraInizio, string $oraFine): bool
+    public function create(string $periodoPrevisto, string $descrizione): bool
     {
-        $sql  = 'INSERT INTO disponibilita (data, ora_inizio, ora_fine) VALUES (:data, :ora_i, :ora_f)';
+        $sql  = 'INSERT INTO disponibilita (periodo_previsto, descrizione) VALUES (:periodo, :descr)';
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([':data' => $data, ':ora_i' => $oraInizio, ':ora_f' => $oraFine]);
+        return $stmt->execute([':periodo' => $periodoPrevisto, ':descr' => $descrizione]);
     }
 
     // ── DELETE ───────────────────────────────────────────────
 
     public function delete(int $id): bool
     {
-        $stmt = $this->pdo->prepare('DELETE FROM disponibilita WHERE id = :id');
+        $stmt = $this->pdo->prepare('DELETE FROM disponibilita WHERE codice_disponibilita = :id');
         return $stmt->execute([':id' => $id]);
+    }
+
+    // ── UPDATE ───────────────────────────────────────────────
+
+    public function update(int $id, string $periodoPrevisto, string $descrizione): bool
+    {
+        $sql  = 'UPDATE disponibilita SET periodo_previsto = :periodo, descrizione = :descr WHERE codice_disponibilita = :id';
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([':periodo' => $periodoPrevisto, ':descr' => $descrizione, ':id' => $id]);
     }
 
     // ── LINK AZIENDA ─────────────────────────────────────────
@@ -392,18 +407,28 @@ class DisponibilitaApi
                         $this->respond(true, null, 'Collegamento azienda-disponibilità creato.', 201);
                     } else {
                         // Creazione disponibilità
-                        $data     = trim((string) ($body['data']       ?? ''));
-                        $oraI     = trim((string) ($body['ora_inizio'] ?? ''));
-                        $oraF     = trim((string) ($body['ora_fine']   ?? ''));
+                        $periodo  = trim((string) ($body['periodo_previsto'] ?? ''));
+                        $descr    = trim((string) ($body['descrizione']      ?? ''));
                         $errors   = [];
-                        if ($data === '') $errors[] = 'data è obbligatoria.';
-                        if ($oraI === '') $errors[] = 'ora_inizio è obbligatoria.';
-                        if ($oraF === '') $errors[] = 'ora_fine è obbligatoria.';
+                        if ($periodo === '') $errors[] = 'periodo_previsto è obbligatorio.';
                         if ($errors) $this->respond(false, ['errors' => $errors], implode(' | ', $errors), 422);
-                        $this->create($data, $oraI, $oraF);
+                        $this->create($periodo, $descr);
                         $newId = (int) $this->pdo->lastInsertId();
                         $this->respond(true, ['id' => $newId], 'Disponibilità creata con successo.', 201);
                     }
+                    break;
+
+                case 'PUT':
+                    if (!$id) $this->respond(false, null, 'ID mancante per PUT.', 400);
+                    $body    = $this->parseBody();
+                    $periodo = trim((string) ($body['periodo_previsto'] ?? ''));
+                    $descr   = trim((string) ($body['descrizione']      ?? ''));
+                    $putErrors = [];
+                    if ($periodo === '') $putErrors[] = 'periodo_previsto è obbligatorio.';
+                    if ($putErrors) $this->respond(false, ['errors' => $putErrors], implode(' | ', $putErrors), 422);
+                    if ($this->getOne($id) === null) $this->respond(false, null, "Disponibilità con ID {$id} non trovata.", 404);
+                    $this->update($id, $periodo, $descr);
+                    $this->respond(true, null, 'Disponibilità aggiornata con successo.');
                     break;
 
                 case 'DELETE':
@@ -1263,7 +1288,7 @@ class StudentiApi
                 ->fetchAll(),
             'candidature' => $this->pdo
                 ->query('SELECT codice_candidatura AS id,
-                                CONCAT("Cand. ", codice_candidatura, " — ", stato) AS label
+                                CONCAT("Cand. ", codice_candidatura, " — ", stato_candidatura) AS label
                           FROM candidatura ORDER BY codice_candidatura DESC')
                 ->fetchAll(),
         };
@@ -1286,7 +1311,7 @@ class StudentiApi
                 s.indirizzo_di_studi,
                 s.codice_esperienza,
                 s.codice_candidatura,
-                c.stato AS stato_candidatura
+                c.stato_candidatura
             FROM studente s
             LEFT JOIN candidatura c ON c.codice_candidatura = s.codice_candidatura
             ORDER BY s.codice_studente ASC

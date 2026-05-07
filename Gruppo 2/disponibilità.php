@@ -1,16 +1,6 @@
 <?php
 /**
- * index.php — Gruppo 2 · Gestione Disponibilità
- *
- * Compatibile con:
- *   - global.css       → variabili CSS, layout sidebar/topbar/main, classi .card,
- *                         .btn, .btn-primary, .btn-danger, .btn-sm, .table-wrapper,
- *                         .form-group, .form-row, .page-header, .avatar, .topbar, …
- *   - auth.php         → requireLoginPage() + $_SESSION['username'] / ['user_id']
- *   - config.php       → getDbConnection()  (non usato direttamente qui)
- *   - api.php          → chiamata AJAX verso middlewere.php  (che usa DisponibilitaApi)
- *
- * Nota: la sessione viene avviata da auth.php (session_status check incluso).
+ * disponibilità.php — Gruppo 2 · Gestione Disponibilità
  */
 
 declare(strict_types=1);
@@ -18,14 +8,9 @@ declare(strict_types=1);
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../auth.php';
 
-// Redirect a login.php se non autenticato.
 requireLoginPage('../login.php');
 
-$username = htmlspecialchars(
-    (string) ($_SESSION['username'] ?? 'Utente'),
-    ENT_QUOTES,
-    'UTF-8'
-);
+$username    = htmlspecialchars((string) ($_SESSION['username'] ?? 'Utente'), ENT_QUOTES, 'UTF-8');
 $userInitial = strtoupper(substr($username, 0, 1)) ?: 'U';
 ?>
 <!DOCTYPE html>
@@ -33,23 +18,26 @@ $userInitial = strtoupper(substr($username, 0, 1)) ?: 'U';
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Disponibilità — FSL Panel</title>
+  <title>Disponibilità — PCTOConnect</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../global.css">
 </head>
 <body>
 
 <div class="app-shell">
 
-  <!-- ── Sidebar ─────────────────────────────────────────── -->
+  <!-- ── SIDEBAR ─────────────────────────────────────────── -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
+    <a href="../index.php" class="sidebar-logo" style="text-decoration:none;color:inherit;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
         <path d="M6 12v5c3 3 9 3 12 0v-5"/>
       </svg>
       PCTO<span class="logo-accent">Connect</span>
-    </div>
+    </a>
 
     <nav class="sidebar-nav">
       <div class="sidebar-section-label">Gestione</div>
@@ -108,7 +96,7 @@ $userInitial = strtoupper(substr($username, 0, 1)) ?: 'U';
     </nav>
   </aside>
 
-  <!-- ── Topbar ────────────────────────────────────────────── -->
+  <!-- ── TOPBAR ───────────────────────────────────────────── -->
   <header class="topbar">
     <button class="btn btn-secondary btn-icon" id="btn-toggle-sidebar"
             title="Apri/chiudi menu" style="display:none">☰</button>
@@ -122,97 +110,139 @@ $userInitial = strtoupper(substr($username, 0, 1)) ?: 'U';
     </div>
   </header>
 
-  <!-- ── Main ─────────────────────────────────────────────── -->
+  <!-- ── MAIN CONTENT ─────────────────────────────────────── -->
   <main class="main-content">
 
-    <!-- Toast container (compatibile con global.css) -->
-    <div id="toast-container"></div>
-
-    <!-- Header pagina -->
-    <div class="page-header" style="margin-bottom:1.5rem;">
-      <div>
-        <h1 style="font-size:var(--fs-xl); font-weight:700; color:var(--primary);">
-          Disponibilità
-          <span id="view-count"
-                style="font-size:var(--fs-sm); font-weight:400; color:var(--text-muted);
-                       background:var(--bg-light); border:1px solid var(--border);
-                       padding:2px 10px; border-radius:999px; margin-left:6px;">—</span>
-        </h1>
-        <p style="font-size:var(--fs-sm); color:var(--text-muted); margin-top:.2rem;">
-          Visualizza, aggiungi o rimuovi le tue disponibilità
-        </p>
-      </div>
+    <div class="page-header">
+      <h1>Disponibilità <span id="view-count" style="font-size:var(--fs-sm);font-weight:400;color:var(--text-muted);background:var(--bg-light);border:1px solid var(--border);padding:2px 10px;border-radius:999px;margin-left:6px;">—</span></h1>
+      <p>Visualizza, aggiungi e gestisci le disponibilità.</p>
     </div>
 
-    <!-- Card: aggiungi disponibilità -->
-    <div class="card" style="margin-bottom:1.5rem;">
-      <div class="card-title">Aggiungi Nuova Disponibilità</div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="data">Data</label>
-          <input class="form-control" type="date" id="data">
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="inizio">Inizio</label>
-          <input class="form-control" type="time" id="inizio">
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="fine">Fine</label>
-          <input class="form-control" type="time" id="fine">
-        </div>
-        <div class="form-group" style="display:flex; align-items:flex-end;">
-          <button class="btn btn-primary" onclick="creaDisponibilita()">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"
-                 viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Salva
-          </button>
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Elenco Disponibilità</h2>
+        <div style="display:flex;gap:.75rem;align-items:center;">
+          <input type="search" id="search-input" class="form-control"
+                 style="width:220px;font-size:var(--fs-sm);"
+                 placeholder="Cerca…" oninput="filterTable()" />
+          <button class="btn btn-primary" id="btn-nuova">＋ Nuova Disponibilità</button>
         </div>
       </div>
-    </div>
 
-    <!-- Card: tabella -->
-    <div class="card" style="padding:0; overflow:hidden;">
+      <div id="table-spinner" class="flex-center mt-2 mb-2" style="display:none">
+        <div class="spinner"></div>
+        <span class="text-muted" style="margin-left:.75rem">Caricamento…</span>
+      </div>
+
       <div class="table-wrapper">
-        <table id="tabellaDisponibilita">
+        <table id="tabella-disponibilita">
           <thead>
             <tr>
               <th>#</th>
-              <th>Data</th>
-              <th>Inizio</th>
-              <th>Fine</th>
+              <th>Periodo</th>
+              <th>Descrizione</th>
               <th>Azioni</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td colspan="5"
-                  style="text-align:center; color:var(--text-muted); padding:2rem;">
-                Caricamento…
-              </td>
-            </tr>
+          <tbody id="disponibilita-tbody">
+            <tr><td colspan="4" class="table-empty">Caricamento in corso…</td></tr>
           </tbody>
         </table>
       </div>
+
+      <!-- Pagination -->
+      <div id="pagination-bar" style="display:none;align-items:center;justify-content:flex-end;gap:.5rem;padding:.6rem 1rem;border-top:1px solid var(--border);">
+        <span id="pagination-info" style="font-size:var(--fs-sm);color:var(--text-muted);margin-right:.25rem;"></span>
+        <button class="btn btn-secondary btn-sm" id="btn-prev" onclick="goPage(-1)" title="Pagina precedente"></button>
+        <button class="btn btn-secondary btn-sm" id="btn-next" onclick="goPage(+1)" title="Pagina successiva"></button>
+      </div>
     </div>
 
-  </main><!-- /.main-content -->
-</div><!-- /.app-shell -->
+  </main>
+</div><!-- /app-shell -->
 
-<!-- ── Script ────────────────────────────────────────────── -->
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║  MODAL — Crea / Modifica Disponibilità               ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<div class="modal-overlay" id="modal-overlay" role="dialog"
+     aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-title">Nuova Disponibilità</h3>
+      <button class="modal-close" id="btn-chiudi-modal" aria-label="Chiudi">&times;</button>
+    </div>
+
+    <form id="form-disponibilita" novalidate>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label class="form-label" for="inp-periodo">Periodo <span class="required">*</span></label>
+        <input type="text" id="inp-periodo" name="periodo_previsto" class="form-control"
+               placeholder="es. Marzo 2026 – Aprile 2026" required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="inp-descrizione">Descrizione</label>
+        <input type="text" id="inp-descrizione" name="descrizione" class="form-control"
+               placeholder="es. Stage presso Azienda XYZ" />
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" id="btn-annulla">Annulla</button>
+      <button type="submit" id="btn-submit" class="btn btn-primary">Crea disponibilità</button>
+    </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- ── TOAST CONTAINER ──────────────────────────────────── -->
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+
+<!-- ── Script ───────────────────────────────────────────── -->
+<script src="../icons/icons.js"></script>
 <script>
-/**
- * Tutti i fetch puntano a middlewere.php, che a sua volta
- * usa DisponibilitaApi (api.php) del flusso principale.
- *
- * La risposta JSON di DisponibilitaApi ha la forma:
- *   { success: bool, message: string, data: ... }
- */
+// ╔══════════════════════════════════════════════════════════╗
+// ║  CONFIG — modifica qui per test                          ║
+// ╚══════════════════════════════════════════════════════════╝
+const ROWS_PER_PAGE = 10;   // numero righe per pagina
 
-const API = 'middlewere.php';
 
-// ── Toast helper ──────────────────────────────────────────
+// ── Stato ─────────────────────────────────────────────────
+const API    = 'middlewere.php';
+let   editId = null;
+let   allRows    = [];   // tutti i record caricati
+let   filtered   = [];   // dopo filterTable()
+let   currentPage = 1;
+
+// ── DB Status ─────────────────────────────────────────────
+function setDbStatus(state) {
+  const el = document.getElementById('db-status');
+  if (!el) return;
+  const map = {
+    loading: [ICONS.dbLoading, 'Connessione…'],
+    ok:      [ICONS.dbOk,      'DB connesso'],
+    err:     [ICONS.dbErr,     'Errore DB'],
+  };
+  const [icon, label] = map[state] || ['', '—'];
+  el.innerHTML = `${icon} ${label}`;
+}
+
+// ── Escape HTML ───────────────────────────────────────────
+function escHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ── Toast ─────────────────────────────────────────────────
 function toast(msg, type = 'success') {
   const tc = document.getElementById('toast-container');
   if (!tc) return;
@@ -223,92 +253,170 @@ function toast(msg, type = 'success') {
   setTimeout(() => el.remove(), 3500);
 }
 
-// ── Carica e renderizza la lista ──────────────────────────
+// ── Modal ─────────────────────────────────────────────────
+function apriModal(id = null) {
+  editId = id;
+  const titleEl  = document.getElementById('modal-title');
+  const submitEl = document.getElementById('btn-submit');
+  titleEl.textContent  = id ? 'Modifica Disponibilità' : 'Nuova Disponibilità';
+  submitEl.textContent = id ? 'Salva modifiche'        : 'Crea disponibilità';
+  document.getElementById('form-disponibilita').reset();
+
+  if (id) {
+    fetch(`${API}?id=${id}`)
+      .then(r => r.json())
+      .then(json => {
+        if (json.success && json.data) {
+          document.getElementById('inp-periodo').value     = json.data.periodo_previsto ?? '';
+          document.getElementById('inp-descrizione').value = json.data.descrizione      ?? '';
+        }
+      })
+      .catch(() => toast('Errore nel caricamento dei dati.', 'error'));
+  }
+
+  document.getElementById('modal-overlay').classList.add('is-open');
+}
+
+function chiudiModal() {
+  document.getElementById('modal-overlay').classList.remove('is-open');
+  editId = null;
+}
+
+// ── Render pagina corrente ─────────────────────────────────
+function renderPage() {
+  const tbody    = document.getElementById('disponibilita-tbody');
+  const totalPages = Math.ceil(filtered.length / ROWS_PER_PAGE) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+  const countEl = document.getElementById('view-count');
+  if (countEl) countEl.textContent = filtered.length;
+
+  const start = (currentPage - 1) * ROWS_PER_PAGE;
+  const slice = filtered.slice(start, start + ROWS_PER_PAGE);
+
+  if (!slice.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="table-empty">Nessuna disponibilità trovata.</td></tr>';
+  } else {
+    tbody.innerHTML = slice.map(item => `
+      <tr>
+        <td>${item.id}</td>
+        <td>${escHtml(item.periodo_previsto ?? '')}</td>
+        <td>${escHtml(item.descrizione ?? '')}</td>
+        <td>
+          <div class="td-actions">
+            <button class="btn btn-warning btn-sm" onclick="apriModal(${item.id})">Modifica</button>
+            <button class="btn btn-danger btn-sm"  onclick="elimina(${item.id})">Elimina</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  // Pagination bar
+  const bar = document.getElementById('pagination-bar');
+  if (filtered.length > ROWS_PER_PAGE) {
+    bar.style.display = 'flex';
+    document.getElementById('pagination-info').textContent =
+      `Pagina ${currentPage} di ${totalPages}`;
+    const btnPrev = document.getElementById('btn-prev');
+    const btnNext = document.getElementById('btn-next');
+    btnPrev.innerHTML = ICONS.chevronLeft;
+    btnNext.innerHTML = ICONS.chevronRight;
+    btnPrev.disabled = currentPage <= 1;
+    btnNext.disabled = currentPage >= totalPages;
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function goPage(delta) {
+  const totalPages = Math.ceil(filtered.length / ROWS_PER_PAGE) || 1;
+  currentPage = Math.max(1, Math.min(totalPages, currentPage + delta));
+  renderPage();
+}
+
+// ── Filtro ricerca ────────────────────────────────────────
+function filterTable() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  filtered = q
+    ? allRows.filter(item =>
+        (item.periodo_previsto ?? '').toLowerCase().includes(q) ||
+        (item.descrizione      ?? '').toLowerCase().includes(q) ||
+        String(item.id).includes(q)
+      )
+    : allRows.slice();
+  currentPage = 1;
+  renderPage();
+}
+
+// ── Carica dati ───────────────────────────────────────────
 async function caricaDati() {
-  const tbody = document.querySelector('#tabellaDisponibilita tbody');
-  tbody.innerHTML = `<tr><td colspan="5"
-    style="text-align:center;color:var(--text-muted);padding:2rem;">
-    Caricamento…</td></tr>`;
+  const spinner = document.getElementById('table-spinner');
+  spinner.style.display = 'flex';
+  setDbStatus('loading');
+  document.getElementById('disponibilita-tbody').innerHTML = '';
 
   try {
     const res  = await fetch(API);
     const json = await res.json();
 
+    setDbStatus(json.success ? 'ok' : 'err');
+
     if (!json.success) {
-      tbody.innerHTML = `<tr><td colspan="5"
-        style="text-align:center;color:var(--danger);padding:2rem;">
-        ${json.message || 'Errore nel caricamento.'}</td></tr>`;
+      document.getElementById('disponibilita-tbody').innerHTML =
+        `<tr><td colspan="4" class="table-empty" style="color:var(--danger);">${json.message || 'Errore nel caricamento.'}</td></tr>`;
       return;
     }
 
-    const dati = json.data ?? [];
-    document.getElementById('view-count').textContent = dati.length;
-
-    if (!dati.length) {
-      tbody.innerHTML = `<tr><td colspan="5"
-        style="text-align:center;color:var(--text-muted);padding:2rem;">
-        Nessuna disponibilità registrata.</td></tr>`;
-      return;
-    }
-
-    tbody.innerHTML = dati.map(item => `
-      <tr>
-        <td style="font-family:var(--font-mono); color:var(--text-muted);">${item.id}</td>
-        <td>${item.data}</td>
-        <td style="font-family:var(--font-mono);">${item.ora_inizio}</td>
-        <td style="font-family:var(--font-mono);">${item.ora_fine}</td>
-        <td class="td-actions">
-          <button class="btn btn-danger btn-sm" onclick="elimina(${item.id})">
-            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"
-                 viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/>
-              <path d="M19 6l-1 14H6L5 6"/>
-              <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-            Elimina
-          </button>
-        </td>
-      </tr>`).join('');
+    allRows  = json.data ?? [];
+    filtered = allRows.slice();
+    currentPage = 1;
+    renderPage();
 
   } catch (err) {
-    console.error('[Disponibilità] Errore fetch:', err);
-    tbody.innerHTML = `<tr><td colspan="5"
-      style="text-align:center;color:var(--danger);padding:2rem;">
-      Errore di rete. Riprova.</td></tr>`;
+    console.error('[Disponibilità]', err);
+    document.getElementById('disponibilita-tbody').innerHTML =
+      '<tr><td colspan="4" class="table-empty" style="color:var(--danger);">Errore di rete. Riprova.</td></tr>';
+    setDbStatus('err');
+  } finally {
+    spinner.style.display = 'none';
   }
 }
 
-// ── Crea nuova disponibilità ──────────────────────────────
-async function creaDisponibilita() {
-  const data       = document.getElementById('data').value.trim();
-  const ora_inizio = document.getElementById('inizio').value.trim();
-  const ora_fine   = document.getElementById('fine').value.trim();
+// ── Submit form ───────────────────────────────────────────
+document.getElementById('form-disponibilita').addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-  if (!data || !ora_inizio || !ora_fine) {
-    toast('Compila tutti i campi.', 'error');
+  const periodo_previsto = document.getElementById('inp-periodo').value.trim();
+  const descrizione      = document.getElementById('inp-descrizione').value.trim();
+
+  if (!periodo_previsto) {
+    toast('Il campo Periodo è obbligatorio.', 'error');
     return;
   }
 
+  const isEdit = editId !== null;
+  const url    = isEdit ? `${API}?id=${editId}` : API;
+  const method = isEdit ? 'PUT' : 'POST';
+
   try {
-    const res  = await fetch(API, {
-      method:  'POST',
+    const res  = await fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ data, ora_inizio, ora_fine }),
+      body:    JSON.stringify({ periodo_previsto, descrizione }),
     });
     const json = await res.json();
 
     if (json.success) {
-      toast('Disponibilità aggiunta.');
-      document.getElementById('data').value   = '';
-      document.getElementById('inizio').value = '';
-      document.getElementById('fine').value   = '';
+      toast(isEdit ? 'Disponibilità aggiornata.' : 'Disponibilità aggiunta.');
+      chiudiModal();
       caricaDati();
     } else {
-      toast(json.message || 'Errore nella creazione.', 'error');
+      toast(json.message || 'Errore.', 'error');
     }
   } catch (err) {
-    console.error('[Disponibilità] Errore creazione:', err);
+    console.error('[Disponibilità]', err);
     toast('Errore di rete.', 'error');
   }
-}
+});
 
 // ── Elimina ───────────────────────────────────────────────
 async function elimina(id) {
@@ -325,13 +433,34 @@ async function elimina(id) {
       toast(json.message || 'Errore nell\'eliminazione.', 'error');
     }
   } catch (err) {
-    console.error('[Disponibilità] Errore eliminazione:', err);
+    console.error('[Disponibilità]', err);
     toast('Errore di rete.', 'error');
   }
 }
 
-// Carica al boot
+// ── Event listeners ───────────────────────────────────────
+document.getElementById('btn-nuova').addEventListener('click', () => apriModal());
+document.getElementById('btn-chiudi-modal').addEventListener('click', chiudiModal);
+document.getElementById('btn-annulla').addEventListener('click', chiudiModal);
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay')) chiudiModal();
+});
+
+// Toggle sidebar mobile
+const btnToggle = document.getElementById('btn-toggle-sidebar');
+const sidebar   = document.getElementById('sidebar');
+
+function checkMobile() {
+  btnToggle.style.display = window.innerWidth <= 900 ? 'inline-flex' : 'none';
+  if (window.innerWidth > 900) sidebar.classList.remove('is-open');
+}
+
+btnToggle.addEventListener('click', () => sidebar.classList.toggle('is-open'));
+window.addEventListener('resize', checkMobile);
+checkMobile();
+
 caricaDati();
 </script>
+
 </body>
 </html>

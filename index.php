@@ -21,16 +21,16 @@ $username = htmlspecialchars((string) ($_SESSION['username'] ?? 'Utente'), ENT_Q
 <div class="app-shell">
 
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
+    <a href="index.php" class="sidebar-logo" style="text-decoration:none;color:inherit;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
         <path d="M6 12v5c3 3 9 3 12 0v-5"/>
       </svg>
       PCTO<span class="logo-accent">Connect</span>
-    </div>
+    </a>
     <nav class="sidebar-nav">
-      <div class="sidebar-section-label">Moduli</div>
+      <div class="sidebar-section-label">Gestione</div>
       <a href="Gruppo1/index_aziende.php">
         <span class="nav-icon">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="20" height="20">
@@ -91,7 +91,6 @@ $username = htmlspecialchars((string) ($_SESSION['username'] ?? 'Utente'), ENT_Q
             title="Apri/chiudi menu" style="display:none">☰</button>
     <span class="topbar-title">Dashboard</span>
     <div class="topbar-right">
-      <span id="db-status" style="font-size:var(--fs-sm);color:var(--text-muted);">Connessione…</span>
       <div class="user-badge">
         <div class="avatar"><?= strtoupper(substr($username, 0, 1)) ?></div>
         <span><?= $username ?></span>
@@ -367,17 +366,6 @@ function checkMobile() {
 window.addEventListener('resize', checkMobile);
 checkMobile();
 
-const dbEl = document.getElementById('db-status');
-if (dbEl) dbEl.innerHTML = `${ICONS.dbLoading} Connessione…`;
-
-fetch('api.php?entity=aziende', { credentials: 'same-origin' }).then(r => r.json()).then(j => {
-  const el = document.getElementById('db-status');
-  if (!el) return;
-  el.innerHTML = j.success ? `${ICONS.dbOk} DB connesso` : `${ICONS.dbErr} Errore DB`;
-}).catch(() => {
-  const el = document.getElementById('db-status');
-  if (el) el.innerHTML = `${ICONS.dbErr} Errore DB`;
-});
 </script>
 </body>
 </html>

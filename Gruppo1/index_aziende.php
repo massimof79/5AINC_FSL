@@ -21,14 +21,14 @@ $username = htmlspecialchars((string) ($_SESSION['username'] ?? 'Utente'), ENT_Q
 <div class="app-shell">
 
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
+    <a href="../index.php" class="sidebar-logo" style="text-decoration:none;color:inherit;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
         <path d="M6 12v5c3 3 9 3 12 0v-5"/>
       </svg>
       PCTO<span class="logo-accent">Connect</span>
-    </div>
+    </a>
     <nav class="sidebar-nav">
       <div class="sidebar-section-label">Gestione</div>
       <a href="index_aziende.php" class="active">
@@ -132,6 +132,11 @@ $username = htmlspecialchars((string) ($_SESSION['username'] ?? 'Utente'), ENT_Q
             <tr><td colspan="6" class="table-empty"><span class="spinner"></span> Caricamento…</td></tr>
           </tbody>
         </table>
+      </div>
+      <div id="pagination-bar" style="display:none;align-items:center;justify-content:flex-end;gap:.5rem;padding:.6rem 1rem;border-top:1px solid var(--border);">
+        <span id="pagination-info" style="font-size:var(--fs-sm);color:var(--text-muted);margin-right:.25rem;"></span>
+        <button class="btn btn-secondary btn-sm" id="btn-prev" onclick="goPage(-1)" title="Pagina precedente"></button>
+        <button class="btn btn-secondary btn-sm" id="btn-next" onclick="goPage(+1)" title="Pagina successiva"></button>
       </div>
     </div>
   </main>

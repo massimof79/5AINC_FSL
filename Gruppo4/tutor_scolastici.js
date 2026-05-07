@@ -4,6 +4,13 @@ const API_URL = '../api.php?entity=tutor_scolastici';
 const SESSION_URL = '../api_session.php';
 let currentEditId = null;
 let allRows = [];
+let filtered = [];
+let currentPage = 1;
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  CONFIG — modifica qui per test                          ║
+// ╚══════════════════════════════════════════════════════════╝
+const ROWS_PER_PAGE = 10;
 
 let tableBody, modalOverlay, modalTitle, formEntity,
     btnNuova, btnChiudiModal, btnAnnulla, spinnerEl;
@@ -82,16 +89,46 @@ class ApiError extends Error {
     }
 }
 
+function renderPage() {
+    const totalPages = Math.ceil(filtered.length / ROWS_PER_PAGE) || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    const countEl = document.getElementById('view-count');
+    if (countEl) countEl.textContent = filtered.length;
+    const slice = filtered.slice((currentPage - 1) * ROWS_PER_PAGE, currentPage * ROWS_PER_PAGE);
+    renderTable(slice);
+    const bar = document.getElementById('pagination-bar');
+    if (!bar) return;
+    if (filtered.length > ROWS_PER_PAGE) {
+        bar.style.display = 'flex';
+        document.getElementById('pagination-info').textContent = `Pagina ${currentPage} di ${totalPages}`;
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        btnPrev.innerHTML = ICONS.chevronLeft;
+        btnNext.innerHTML = ICONS.chevronRight;
+        btnPrev.disabled = currentPage <= 1;
+        btnNext.disabled = currentPage >= totalPages;
+    } else {
+        bar.style.display = 'none';
+    }
+}
+
+function goPage(delta) {
+    const totalPages = Math.ceil(filtered.length / ROWS_PER_PAGE) || 1;
+    currentPage = Math.max(1, Math.min(totalPages, currentPage + delta));
+    renderPage();
+}
+
 function filterTable() {
     const q = (document.getElementById('search-input')?.value ?? '').toLowerCase().trim();
-    const filtered = q
+    filtered = q
         ? allRows.filter(r =>
             String(r.nome ?? '').toLowerCase().includes(q) ||
             String(r.cognome ?? '').toLowerCase().includes(q) ||
             String(r.tipo ?? '').toLowerCase().includes(q)
           )
-        : allRows;
-    renderTable(filtered);
+        : allRows.slice();
+    currentPage = 1;
+    renderPage();
 }
 
 async function loadRows() {
@@ -100,7 +137,9 @@ async function loadRows() {
     try {
         const { data } = await apiFetch(API_URL);
         allRows = data ?? [];
-        renderTable(allRows);
+        filtered = allRows.slice();
+        currentPage = 1;
+        renderPage();
         setDbStatus('ok');
     } catch (err) {
         handleError(err, 'Caricamento tutor scolastici');

@@ -29,14 +29,14 @@ requireLoginPage('../login.php');
 
   <!-- ── SIDEBAR ─────────────────────────────────────────── -->
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo">
+    <a href="../index.php" class="sidebar-logo" style="text-decoration:none;color:inherit;">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
         <path d="M6 12v5c3 3 9 3 12 0v-5"/>
       </svg>
       PCTO<span class="logo-accent">Connect</span>
-    </div>
+    </a>
 
     <nav class="sidebar-nav">
       <div class="sidebar-section-label">Gestione</div>
@@ -115,7 +115,7 @@ requireLoginPage('../login.php');
   <main class="main-content">
 
     <div class="page-header">
-      <h1>Esperienze</h1>
+      <h1>Esperienze <span id="view-count" style="font-size:var(--fs-sm);font-weight:400;color:var(--text-muted);background:var(--bg-light);border:1px solid var(--border);padding:2px 10px;border-radius:999px;margin-left:6px;">—</span></h1>
       <p>Visualizza, crea e gestisci le esperienze di alternanza scuola-lavoro.</p>
     </div>
 
@@ -154,6 +154,11 @@ requireLoginPage('../login.php');
             <tr><td colspan="9" class="table-empty">Caricamento in corso…</td></tr>
           </tbody>
         </table>
+      </div>
+      <div id="pagination-bar" style="display:none;align-items:center;justify-content:flex-end;gap:.5rem;padding:.6rem 1rem;border-top:1px solid var(--border);">
+        <span id="pagination-info" style="font-size:var(--fs-sm);color:var(--text-muted);margin-right:.25rem;"></span>
+        <button class="btn btn-secondary btn-sm" id="btn-prev" onclick="goPage(-1)" title="Pagina precedente"></button>
+        <button class="btn btn-secondary btn-sm" id="btn-next" onclick="goPage(+1)" title="Pagina successiva"></button>
       </div>
     </div>
 

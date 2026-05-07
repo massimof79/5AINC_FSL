@@ -12,6 +12,13 @@ const API_URL = './api_esperienze.php';
 // ── Stato locale ──────────────────────────────────────────────
 let currentEditId = null;   // null = creazione, number = modifica
 let allEsperienze = [];
+let filtered = [];
+let currentPage = 1;
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  CONFIG — modifica qui per test                          ║
+// ╚══════════════════════════════════════════════════════════╝
+const ROWS_PER_PAGE = 10;
 
 // ── Riferimenti DOM ───────────────────────────────────────────
 let tableBody, modalOverlay, modalTitle, formEsperienza,
@@ -83,16 +90,46 @@ class ApiError extends Error {
 //  READ — carica e renderizza la tabella
 // ════════════════════════════════════════════════════════════
 
+function renderPage() {
+    const totalPages = Math.ceil(filtered.length / ROWS_PER_PAGE) || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    const countEl = document.getElementById('view-count');
+    if (countEl) countEl.textContent = filtered.length;
+    const slice = filtered.slice((currentPage - 1) * ROWS_PER_PAGE, currentPage * ROWS_PER_PAGE);
+    renderTable(slice);
+    const bar = document.getElementById('pagination-bar');
+    if (!bar) return;
+    if (filtered.length > ROWS_PER_PAGE) {
+        bar.style.display = 'flex';
+        document.getElementById('pagination-info').textContent = `Pagina ${currentPage} di ${totalPages}`;
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        btnPrev.innerHTML = ICONS.chevronLeft;
+        btnNext.innerHTML = ICONS.chevronRight;
+        btnPrev.disabled = currentPage <= 1;
+        btnNext.disabled = currentPage >= totalPages;
+    } else {
+        bar.style.display = 'none';
+    }
+}
+
+function goPage(delta) {
+    const totalPages = Math.ceil(filtered.length / ROWS_PER_PAGE) || 1;
+    currentPage = Math.max(1, Math.min(totalPages, currentPage + delta));
+    renderPage();
+}
+
 function filterTable() {
     const q = (document.getElementById('search-input')?.value ?? '').toLowerCase().trim();
-    const filtered = q
+    filtered = q
         ? allEsperienze.filter(r =>
             String(r.periodo_effettivo ?? '').toLowerCase().includes(q) ||
             String(r.numero_studenti ?? '').includes(q) ||
             String(r.codice_esperienza ?? '').includes(q)
           )
-        : allEsperienze;
-    renderTable(filtered);
+        : allEsperienze.slice();
+    currentPage = 1;
+    renderPage();
 }
 
 async function loadEsperienze() {
@@ -101,7 +138,9 @@ async function loadEsperienze() {
     try {
         const { data } = await apiFetch(API_URL);
         allEsperienze = data ?? [];
-        renderTable(allEsperienze);
+        filtered = allEsperienze.slice();
+        currentPage = 1;
+        renderPage();
         setDbStatus('ok');
     } catch (err) {
         handleError(err, 'Caricamento esperienze');

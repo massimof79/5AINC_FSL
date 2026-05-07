@@ -202,7 +202,7 @@ button, input, select, textarea { font-family: inherit; }
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
-  padding: 1.5rem;
+  padding: 1.5rem 1.5rem 0.5rem;
 }
 
 .card-header {
@@ -306,6 +306,8 @@ thead th {
   white-space: nowrap;
 }
 
+thead th:last-child { text-align: center; }
+
 thead th:first-child { border-radius: var(--radius) 0 0 0; }
 thead th:last-child  { border-radius: 0 var(--radius) 0 0; }
 
@@ -334,6 +336,8 @@ tbody tr:last-child td { border-bottom: none; }
   align-items: center;
   justify-content: center;
 }
+
+.table-nowrap td { white-space: nowrap; }
 
 .td-actions .btn-sm svg {
   min-width: 18px;

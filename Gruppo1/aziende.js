@@ -3,7 +3,14 @@
 const MIDDLEWARE_URL = 'aziende_middleware.php';
 
 let allAziende = [];
+let filtered = [];
+let currentPage = 1;
 let currentEditId = null;
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║  CONFIG — modifica qui per test                          ║
+// ╚══════════════════════════════════════════════════════════╝
+const ROWS_PER_PAGE = 10;
 let pendingDeleteId = null;
 
 let tableBody, crudModal, crudModalTitle, formEntity,
@@ -59,13 +66,44 @@ async function apiFetch(action, method = 'GET', body = null) {
     return res.json();
 }
 
+function renderPage() {
+    const totalPages = Math.ceil(filtered.length / ROWS_PER_PAGE) || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    const slice = filtered.slice((currentPage - 1) * ROWS_PER_PAGE, currentPage * ROWS_PER_PAGE);
+    const countEl = document.getElementById('view-count');
+    if (countEl) countEl.textContent = filtered.length;
+    renderTable(slice);
+    const bar = document.getElementById('pagination-bar');
+    if (!bar) return;
+    if (filtered.length > ROWS_PER_PAGE) {
+        bar.style.display = 'flex';
+        document.getElementById('pagination-info').textContent = `Pagina ${currentPage} di ${totalPages}`;
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        btnPrev.innerHTML = ICONS.chevronLeft;
+        btnNext.innerHTML = ICONS.chevronRight;
+        btnPrev.disabled = currentPage <= 1;
+        btnNext.disabled = currentPage >= totalPages;
+    } else {
+        bar.style.display = 'none';
+    }
+}
+
+function goPage(delta) {
+    const totalPages = Math.ceil(filtered.length / ROWS_PER_PAGE) || 1;
+    currentPage = Math.max(1, Math.min(totalPages, currentPage + delta));
+    renderPage();
+}
+
 async function loadAziende() {
     setDbStatus('loading');
     try {
         const data = await apiFetch('list');
         if (!data.success) throw new Error(data.message);
         allAziende = data.data ?? [];
-        renderTable(allAziende);
+        filtered = allAziende.slice();
+        currentPage = 1;
+        renderPage();
         setDbStatus('ok');
     } catch (e) {
         setDbStatus('err');
@@ -75,9 +113,6 @@ async function loadAziende() {
 }
 
 function renderTable(aziende) {
-    const countEl = document.getElementById('view-count');
-    if (countEl) countEl.textContent = aziende.length;
-
     if (!aziende.length) {
         tableBody.innerHTML = `<tr><td colspan="6" class="table-empty">Nessuna azienda trovata</td></tr>`;
         return;
@@ -102,15 +137,16 @@ function renderTable(aziende) {
 
 function filterTable() {
     const q = (document.getElementById('search-input')?.value ?? '').toLowerCase().trim();
-    const filtered = q
+    filtered = q
         ? allAziende.filter(a =>
             String(a.ragione_sociale ?? '').toLowerCase().includes(q) ||
             String(a.partita_iva ?? '').toLowerCase().includes(q) ||
             String(a.sede_legale ?? '').toLowerCase().includes(q) ||
             String(a.sede_operativa ?? '').toLowerCase().includes(q)
           )
-        : allAziende;
-    renderTable(filtered);
+        : allAziende.slice();
+    currentPage = 1;
+    renderPage();
 }
 
 async function apriModal(id) {

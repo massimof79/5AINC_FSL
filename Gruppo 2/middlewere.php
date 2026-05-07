@@ -15,9 +15,9 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/auth.php';
-require_once __DIR__ . '/api.php';
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../auth.php';
+require_once __DIR__ . '/../api.php';
 
 // Intestazioni JSON già impostate da api.php, ma le reimpostiamo
 // per sicurezza nel caso questo file venisse chiamato direttamente.

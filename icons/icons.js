@@ -9,5 +9,7 @@ const ICONS = {
     info: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
     dbLoading: `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" style="display:inline;vertical-align:middle;"><circle cx="5" cy="5" r="4" fill="#f59e0b"/></svg>`,
     dbOk:      `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" style="display:inline;vertical-align:middle;"><circle cx="5" cy="5" r="4" fill="#10b981"/></svg>`,
-    dbErr:     `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" style="display:inline;vertical-align:middle;"><circle cx="5" cy="5" r="4" fill="#ef4444"/></svg>`,
+    dbErr:        `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" style="display:inline;vertical-align:middle;"><circle cx="5" cy="5" r="4" fill="#ef4444"/></svg>`,
+    chevronLeft:  `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><path d="M15 18l-6-6 6-6"/></svg>`,
+    chevronRight: `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><path d="M9 18l6-6-6-6"/></svg>`,
 };
