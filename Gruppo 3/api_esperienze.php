@@ -82,19 +82,19 @@ function handleResource(PDO $pdo, string $resource): never
     $rows = match ($resource) {
         'tutor_scolastico' => $pdo
             ->query('SELECT codice_docente AS id, CONCAT(nome, " ", cognome) AS label
-                     FROM TUTOR_SCOLASTICO ORDER BY cognome, nome')
+                     FROM tutor_scolastico ORDER BY cognome, nome')
             ->fetchAll(PDO::FETCH_ASSOC),
 
         'tutor_aziendale' => $pdo
             ->query('SELECT codice_tutor AS id, CONCAT(nome, " ", cognome) AS label
-                     FROM TUTOR_AZIENDALE ORDER BY cognome, nome')
+                     FROM tutor_aziendale ORDER BY cognome, nome')
             ->fetchAll(PDO::FETCH_ASSOC),
 
         // BUG FIX: era ORDER BY data_inizio (inesistente) → corretto in periodo_previsto
         'disponibilita' => $pdo
             ->query('SELECT codice_disponibilita AS id,
                             CONCAT("Periodo: ", periodo_previsto, " - ", descrizione) AS label
-                     FROM DISPONIBILITA ORDER BY periodo_previsto DESC')
+                     FROM disponibilita ORDER BY periodo_previsto DESC')
             ->fetchAll(PDO::FETCH_ASSOC),
     };
 
@@ -108,7 +108,7 @@ function handleResource(PDO $pdo, string $resource): never
 function listEsperienze(PDO $pdo): never
 {
     try {
-        $checkTable = $pdo->query("SHOW TABLES LIKE 'ESPERIENZA'");
+        $checkTable = $pdo->query("SHOW TABLES LIKE 'esperienza'");
         if ($checkTable->rowCount() === 0) {
             respond(true, [], 'Nessuna tabella ESPERIENZA trovata. Creare prima le tabelle.');
         }
@@ -126,10 +126,10 @@ function listEsperienze(PDO $pdo): never
                 CONCAT(ts.nome, ' ', ts.cognome) AS nome_tutor_scolastico,
                 CONCAT(ta.nome, ' ', ta.cognome) AS nome_tutor_aziendale,
                 d.periodo_previsto AS data_disponibilita
-            FROM ESPERIENZA e
-            LEFT JOIN TUTOR_SCOLASTICO ts ON ts.codice_docente      = e.codice_docente
-            LEFT JOIN TUTOR_AZIENDALE  ta ON ta.codice_tutor        = e.codice_tutor
-            LEFT JOIN DISPONIBILITA     d ON d.codice_disponibilita = e.codice_disponibilita
+            FROM esperienza e
+            LEFT JOIN tutor_scolastico ts ON ts.codice_docente      = e.codice_docente
+            LEFT JOIN tutor_aziendale  ta ON ta.codice_tutor        = e.codice_tutor
+            LEFT JOIN disponibilita     d ON d.codice_disponibilita = e.codice_disponibilita
             ORDER BY e.codice_esperienza ASC
         SQL;
 
@@ -166,7 +166,7 @@ function getEsperienza(PDO $pdo, int $id): never
             e.codice_docente,
             e.codice_disponibilita,
             e.codice_tutor
-        FROM ESPERIENZA e
+        FROM esperienza e
         WHERE e.codice_esperienza = :id
     SQL;
 
@@ -191,7 +191,7 @@ function createEsperienza(PDO $pdo): never
     $fields = validateFields($body);
 
     $sql = <<<'SQL'
-        INSERT INTO ESPERIENZA
+        INSERT INTO esperienza
             (periodo_effettivo, numero_ore_previste, numero_ore_svolte,
              numero_studenti, codice_docente, codice_disponibilita, codice_tutor)
         VALUES
@@ -220,7 +220,7 @@ function createEsperienza(PDO $pdo): never
 
 function updateEsperienza(PDO $pdo, int $id): never
 {
-    $check = $pdo->prepare('SELECT codice_esperienza FROM ESPERIENZA WHERE codice_esperienza = :id');
+    $check = $pdo->prepare('SELECT codice_esperienza FROM esperienza WHERE codice_esperienza = :id');
     $check->execute([':id' => $id]);
     if (!$check->fetch()) {
         respond(false, null, "Esperienza con ID {$id} non trovata.", 404);
@@ -230,7 +230,7 @@ function updateEsperienza(PDO $pdo, int $id): never
     $fields = validateFields($body);
 
     $sql = <<<'SQL'
-        UPDATE ESPERIENZA SET
+        UPDATE esperienza SET
             periodo_effettivo    = :periodo,
             numero_ore_previste  = :ore_previste,
             numero_ore_svolte    = :ore_svolte,
@@ -262,13 +262,13 @@ function updateEsperienza(PDO $pdo, int $id): never
 
 function deleteEsperienza(PDO $pdo, int $id): never
 {
-    $check = $pdo->prepare('SELECT codice_esperienza FROM ESPERIENZA WHERE codice_esperienza = :id');
+    $check = $pdo->prepare('SELECT codice_esperienza FROM esperienza WHERE codice_esperienza = :id');
     $check->execute([':id' => $id]);
     if (!$check->fetch()) {
         respond(false, null, "Esperienza con ID {$id} non trovata.", 404);
     }
 
-    $stmt = $pdo->prepare('DELETE FROM ESPERIENZA WHERE codice_esperienza = :id');
+    $stmt = $pdo->prepare('DELETE FROM esperienza WHERE codice_esperienza = :id');
     $stmt->execute([':id' => $id]);
 
     respond(true, null, 'Esperienza eliminata con successo.');
