@@ -539,17 +539,17 @@ class EsperienzeApi
         $rows = match ($resource) {
             'tutor_scolastico' => $this->pdo
                 ->query('SELECT codice_docente AS id, CONCAT(nome, " ", cognome) AS label
-                          FROM TUTOR_SCOLASTICO ORDER BY cognome, nome')
+                          FROM tutor_scolastico ORDER BY cognome, nome')
                 ->fetchAll(),
             'tutor_aziendale' => $this->pdo
                 ->query('SELECT codice_tutor AS id, CONCAT(nome, " ", cognome) AS label
-                          FROM TUTOR_AZIENDALE ORDER BY cognome, nome')
+                          FROM tutor_aziendale ORDER BY cognome, nome')
                 ->fetchAll(),
             // BUG FIX originale: era ORDER BY data_inizio (inesistente) → corretto in periodo_previsto
             'disponibilita' => $this->pdo
                 ->query('SELECT codice_disponibilita AS id,
                                 CONCAT("Periodo: ", periodo_previsto, " - ", descrizione) AS label
-                          FROM DISPONIBILITA ORDER BY periodo_previsto DESC')
+                          FROM disponibilita ORDER BY periodo_previsto DESC')
                 ->fetchAll(),
         };
 
@@ -561,7 +561,7 @@ class EsperienzeApi
     private function listEsperienze(): never
     {
         try {
-            $checkTable = $this->pdo->query("SHOW TABLES LIKE 'ESPERIENZA'");
+            $checkTable = $this->pdo->query("SHOW TABLES LIKE 'esperienza'");
             if ($checkTable->rowCount() === 0) {
                 $this->respond(true, [], 'Nessuna tabella ESPERIENZA trovata. Creare prima le tabelle.');
             }
@@ -579,10 +579,10 @@ class EsperienzeApi
                     CONCAT(ts.nome, ' ', ts.cognome) AS nome_tutor_scolastico,
                     CONCAT(ta.nome, ' ', ta.cognome) AS nome_tutor_aziendale,
                     d.periodo_previsto AS data_disponibilita
-                FROM ESPERIENZA e
-                LEFT JOIN TUTOR_SCOLASTICO ts ON ts.codice_docente = e.codice_docente
-                LEFT JOIN TUTOR_AZIENDALE  ta ON ta.codice_tutor   = e.codice_tutor
-                LEFT JOIN DISPONIBILITA    d  ON d.codice_disponibilita = e.codice_disponibilita
+                FROM esperienza e
+                LEFT JOIN tutor_scolastico ts ON ts.codice_docente = e.codice_docente
+                LEFT JOIN tutor_aziendale  ta ON ta.codice_tutor   = e.codice_tutor
+                LEFT JOIN disponibilita    d  ON d.codice_disponibilita = e.codice_disponibilita
                 ORDER BY e.codice_esperienza ASC
             SQL;
 
@@ -614,7 +614,7 @@ class EsperienzeApi
                 e.codice_docente,
                 e.codice_disponibilita,
                 e.codice_tutor
-            FROM ESPERIENZA e
+            FROM esperienza e
             WHERE e.codice_esperienza = :id
         SQL;
 
@@ -636,7 +636,7 @@ class EsperienzeApi
         $fields = $this->validateFields($body);
 
         $sql = <<<'SQL'
-            INSERT INTO ESPERIENZA
+            INSERT INTO esperienza
                 (periodo_effettivo, numero_ore_previste, numero_ore_svolte,
                  numero_studenti, codice_docente, codice_disponibilita, codice_tutor)
             VALUES
@@ -663,7 +663,7 @@ class EsperienzeApi
 
     private function updateEsperienza(int $id): never
     {
-        $check = $this->pdo->prepare('SELECT codice_esperienza FROM ESPERIENZA WHERE codice_esperienza = :id');
+        $check = $this->pdo->prepare('SELECT codice_esperienza FROM esperienza WHERE codice_esperienza = :id');
         $check->execute([':id' => $id]);
         if (!$check->fetch()) {
             $this->respond(false, null, "Esperienza con ID {$id} non trovata.", 404);
@@ -673,7 +673,7 @@ class EsperienzeApi
         $fields = $this->validateFields($body);
 
         $sql = <<<'SQL'
-            UPDATE ESPERIENZA SET
+            UPDATE esperienza SET
                 periodo_effettivo   = :periodo,
                 numero_ore_previste = :ore_previste,
                 numero_ore_svolte   = :ore_svolte,
@@ -703,13 +703,13 @@ class EsperienzeApi
 
     private function deleteEsperienza(int $id): never
     {
-        $check = $this->pdo->prepare('SELECT codice_esperienza FROM ESPERIENZA WHERE codice_esperienza = :id');
+        $check = $this->pdo->prepare('SELECT codice_esperienza FROM esperienza WHERE codice_esperienza = :id');
         $check->execute([':id' => $id]);
         if (!$check->fetch()) {
             $this->respond(false, null, "Esperienza con ID {$id} non trovata.", 404);
         }
 
-        $stmt = $this->pdo->prepare('DELETE FROM ESPERIENZA WHERE codice_esperienza = :id');
+        $stmt = $this->pdo->prepare('DELETE FROM esperienza WHERE codice_esperienza = :id');
         $stmt->execute([':id' => $id]);
         $this->respond(true, null, 'Esperienza eliminata con successo.');
     }
@@ -848,7 +848,7 @@ class TutorAziendaliApi
     {
         $rows = $this->pdo
             ->query('SELECT codice_tutor, nome, cognome, ruolo, email
-                     FROM TUTOR_AZIENDALE ORDER BY codice_tutor DESC')
+                     FROM tutor_aziendale ORDER BY codice_tutor DESC')
             ->fetchAll();
         $this->respond(true, $rows);
     }
@@ -859,7 +859,7 @@ class TutorAziendaliApi
     {
         $stmt = $this->pdo->prepare(
             'SELECT codice_tutor, nome, cognome, ruolo, email
-             FROM TUTOR_AZIENDALE WHERE codice_tutor = :id'
+             FROM tutor_aziendale WHERE codice_tutor = :id'
         );
         $stmt->execute([':id' => $id]);
         $row = $stmt->fetch();
@@ -875,7 +875,7 @@ class TutorAziendaliApi
     {
         $fields = $this->validateFields($this->parseBody());
         $stmt = $this->pdo->prepare(
-            'INSERT INTO TUTOR_AZIENDALE (nome, cognome, ruolo, email)
+            'INSERT INTO tutor_aziendale (nome, cognome, ruolo, email)
              VALUES (:nome, :cognome, :ruolo, :email)'
         );
         $stmt->execute([
@@ -894,7 +894,7 @@ class TutorAziendaliApi
         $this->ensureExists($id);
         $fields = $this->validateFields($this->parseBody());
         $stmt = $this->pdo->prepare(
-            'UPDATE TUTOR_AZIENDALE
+            'UPDATE tutor_aziendale
              SET nome = :nome, cognome = :cognome, ruolo = :ruolo, email = :email
              WHERE codice_tutor = :id'
         );
@@ -915,7 +915,7 @@ class TutorAziendaliApi
         $this->ensureExists($id);
 
         // Verifica riferimenti in ESPERIENZA
-        $checkRef = $this->pdo->prepare('SELECT COUNT(*) FROM ESPERIENZA WHERE codice_tutor = :id');
+        $checkRef = $this->pdo->prepare('SELECT COUNT(*) FROM esperienza WHERE codice_tutor = :id');
         $checkRef->execute([':id' => $id]);
         $references = (int) $checkRef->fetchColumn();
         if ($references > 0) {
@@ -927,7 +927,7 @@ class TutorAziendaliApi
             );
         }
 
-        $stmt = $this->pdo->prepare('DELETE FROM TUTOR_AZIENDALE WHERE codice_tutor = :id');
+        $stmt = $this->pdo->prepare('DELETE FROM tutor_aziendale WHERE codice_tutor = :id');
         $stmt->execute([':id' => $id]);
         $this->respond(true, null, 'Tutor aziendale eliminato con successo.');
     }
@@ -936,7 +936,7 @@ class TutorAziendaliApi
 
     private function ensureExists(int $id): void
     {
-        $stmt = $this->pdo->prepare('SELECT codice_tutor FROM TUTOR_AZIENDALE WHERE codice_tutor = :id');
+        $stmt = $this->pdo->prepare('SELECT codice_tutor FROM tutor_aziendale WHERE codice_tutor = :id');
         $stmt->execute([':id' => $id]);
         if (!$stmt->fetch()) {
             $this->respond(false, null, "Tutor aziendale con ID {$id} non trovato.", 404);
@@ -1057,7 +1057,7 @@ class TutorScolasticiApi
     {
         $rows = $this->pdo
             ->query('SELECT codice_docente, nome, cognome, tipo, numero_studenti
-                     FROM TUTOR_SCOLASTICO ORDER BY codice_docente DESC')
+                     FROM tutor_scolastico ORDER BY codice_docente DESC')
             ->fetchAll();
         $this->respond(true, $rows);
     }
@@ -1068,7 +1068,7 @@ class TutorScolasticiApi
     {
         $stmt = $this->pdo->prepare(
             'SELECT codice_docente, nome, cognome, tipo, numero_studenti
-             FROM TUTOR_SCOLASTICO WHERE codice_docente = :id'
+             FROM tutor_scolastico WHERE codice_docente = :id'
         );
         $stmt->execute([':id' => $id]);
         $row = $stmt->fetch();
@@ -1084,7 +1084,7 @@ class TutorScolasticiApi
     {
         $fields = $this->validateFields($this->parseBody());
         $stmt = $this->pdo->prepare(
-            'INSERT INTO TUTOR_SCOLASTICO (nome, cognome, tipo, numero_studenti)
+            'INSERT INTO tutor_scolastico (nome, cognome, tipo, numero_studenti)
              VALUES (:nome, :cognome, :tipo, :numero_studenti)'
         );
         $stmt->execute([
@@ -1103,7 +1103,7 @@ class TutorScolasticiApi
         $this->ensureExists($id);
         $fields = $this->validateFields($this->parseBody());
         $stmt = $this->pdo->prepare(
-            'UPDATE TUTOR_SCOLASTICO
+            'UPDATE tutor_scolastico
              SET nome = :nome, cognome = :cognome, tipo = :tipo, numero_studenti = :numero_studenti
              WHERE codice_docente = :id'
         );
@@ -1122,7 +1122,7 @@ class TutorScolasticiApi
     private function deleteTutor(int $id): never
     {
         $this->ensureExists($id);
-        $stmt = $this->pdo->prepare('DELETE FROM TUTOR_SCOLASTICO WHERE codice_docente = :id');
+        $stmt = $this->pdo->prepare('DELETE FROM tutor_scolastico WHERE codice_docente = :id');
         $stmt->execute([':id' => $id]);
         $this->respond(true, null, 'Tutor scolastico eliminato con successo.');
     }
@@ -1131,7 +1131,7 @@ class TutorScolasticiApi
 
     private function ensureExists(int $id): void
     {
-        $stmt = $this->pdo->prepare('SELECT codice_docente FROM TUTOR_SCOLASTICO WHERE codice_docente = :id');
+        $stmt = $this->pdo->prepare('SELECT codice_docente FROM tutor_scolastico WHERE codice_docente = :id');
         $stmt->execute([':id' => $id]);
         if (!$stmt->fetch()) {
             $this->respond(false, null, "Tutor scolastico con ID {$id} non trovato.", 404);
@@ -1259,12 +1259,12 @@ class StudentiApi
             'esperienze' => $this->pdo
                 ->query('SELECT codice_esperienza AS id,
                                 CONCAT("Esp. ", codice_esperienza, " — ", periodo_effettivo) AS label
-                          FROM ESPERIENZA ORDER BY codice_esperienza DESC')
+                          FROM esperienza ORDER BY codice_esperienza DESC')
                 ->fetchAll(),
             'candidature' => $this->pdo
                 ->query('SELECT codice_candidatura AS id,
                                 CONCAT("Cand. ", codice_candidatura, " — ", stato) AS label
-                          FROM CANDIDATURA ORDER BY codice_candidatura DESC')
+                          FROM candidatura ORDER BY codice_candidatura DESC')
                 ->fetchAll(),
         };
 
@@ -1287,8 +1287,8 @@ class StudentiApi
                 s.codice_esperienza,
                 s.codice_candidatura,
                 c.stato AS stato_candidatura
-            FROM STUDENTE s
-            LEFT JOIN CANDIDATURA c ON c.codice_candidatura = s.codice_candidatura
+            FROM studente s
+            LEFT JOIN candidatura c ON c.codice_candidatura = s.codice_candidatura
             ORDER BY s.codice_studente ASC
         SQL;
 
@@ -1302,7 +1302,7 @@ class StudentiApi
             'SELECT codice_studente, nome, cognome, data_di_nascita, luogo_di_nascita,
                     indirizzo, email, classe, indirizzo_di_studi,
                     codice_esperienza, codice_candidatura
-             FROM STUDENTE WHERE codice_studente = :id'
+             FROM studente WHERE codice_studente = :id'
         );
         $stmt->execute([':id' => $id]);
         $row = $stmt->fetch();
@@ -1316,7 +1316,7 @@ class StudentiApi
     {
         $fields = $this->validateFields($this->parseBody());
         $stmt = $this->pdo->prepare(
-            'INSERT INTO STUDENTE
+            'INSERT INTO studente
                 (nome, cognome, data_di_nascita, luogo_di_nascita,
                  indirizzo, email, classe, indirizzo_di_studi,
                  codice_esperienza, codice_candidatura)
@@ -1334,7 +1334,7 @@ class StudentiApi
         $this->ensureExists($id);
         $fields = $this->validateFields($this->parseBody());
         $stmt = $this->pdo->prepare(
-            'UPDATE STUDENTE SET
+            'UPDATE studente SET
                 nome = :nome, cognome = :cognome,
                 data_di_nascita = :data_di_nascita, luogo_di_nascita = :luogo_di_nascita,
                 indirizzo = :indirizzo, email = :email,
@@ -1349,14 +1349,14 @@ class StudentiApi
     private function deleteStudente(int $id): never
     {
         $this->ensureExists($id);
-        $stmt = $this->pdo->prepare('DELETE FROM STUDENTE WHERE codice_studente = :id');
+        $stmt = $this->pdo->prepare('DELETE FROM studente WHERE codice_studente = :id');
         $stmt->execute([':id' => $id]);
         $this->respond(true, null, 'Studente eliminato con successo.');
     }
 
     private function ensureExists(int $id): void
     {
-        $stmt = $this->pdo->prepare('SELECT codice_studente FROM STUDENTE WHERE codice_studente = :id');
+        $stmt = $this->pdo->prepare('SELECT codice_studente FROM studente WHERE codice_studente = :id');
         $stmt->execute([':id' => $id]);
         if (!$stmt->fetch()) {
             $this->respond(false, null, "Studente con ID {$id} non trovato.", 404);
