@@ -59,7 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="global.css" />
+  <link id="theme-link" rel="stylesheet" href="global2.css" />
+  <script src="theme.js"></script>
   <style>
     body { display:flex; align-items:center; justify-content:center; min-height:100vh; background:var(--bg-light); }
     .login-wrapper { width:100%; max-width:420px; padding:1rem; }

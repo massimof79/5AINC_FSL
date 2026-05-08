@@ -15,7 +15,8 @@ $username = htmlspecialchars((string) ($_SESSION['username'] ?? 'Utente'), ENT_Q
   <meta name="username" content="<?= $username ?>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../global.css" />
+  <link id="theme-link" rel="stylesheet" href="../global2.css" />
+  <script src="../theme.js"></script>
 </head>
 <body>
 <div class="app-shell">
@@ -75,6 +76,24 @@ $username = htmlspecialchars((string) ($_SESSION['username'] ?? 'Utente'), ENT_Q
           </svg>
         </span>Studenti
       </a>
+      <div class="sidebar-section-label">Tema</div>
+      <div class="theme-switcher" id="theme-switcher" role="group" aria-label="Selezione tema">
+        <button class="theme-tab" data-theme="global.css"
+                aria-pressed="false" aria-label="Attiva tema Classic">
+          <span class="theme-tab-swatch theme-swatch-classic" aria-hidden="true"></span>
+          Classic
+        </button>
+        <button class="theme-tab" data-theme="global2.css"
+                aria-pressed="false" aria-label="Attiva tema Aurora">
+          <span class="theme-tab-swatch theme-swatch-aurora" aria-hidden="true"></span>
+          Aurora
+        </button>
+        <button class="theme-tab" data-theme="global3.css"
+                aria-pressed="false" aria-label="Attiva tema Brutale">
+          <span class="theme-tab-swatch theme-swatch-brutale" aria-hidden="true"></span>
+          Brutale
+        </button>
+      </div>
       <div class="sidebar-section-label">Sistema</div>
       <a href="../logout.php">
         <span class="nav-icon">
@@ -111,8 +130,8 @@ $username = htmlspecialchars((string) ($_SESSION['username'] ?? 'Utente'), ENT_Q
         <h2 class="card-title">Elenco Aziende</h2>
         <div style="display:flex;gap:.75rem;align-items:center;">
           <input type="search" id="search-input" class="form-control"
-                 style="width:220px;font-size:var(--fs-sm);"
-                 placeholder="Cerca…" oninput="filterTable()" />
+                 style="width:280px;font-size:var(--fs-sm);"
+                 placeholder="Cerca per nome, P.IVA, sede…" oninput="filterTable()" />
           <button class="btn btn-primary" id="btn-nuova">＋ Aggiungi Azienda</button>
         </div>
       </div>

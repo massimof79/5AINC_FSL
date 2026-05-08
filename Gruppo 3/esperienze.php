@@ -21,7 +21,8 @@ requireLoginPage('../login.php');
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="../global.css" />
+  <link id="theme-link" rel="stylesheet" href="../global2.css" />
+  <script src="../theme.js"></script>
 </head>
 <body>
 
@@ -84,6 +85,24 @@ requireLoginPage('../login.php');
           </svg>
         </span>Studenti
       </a>
+      <div class="sidebar-section-label">Tema</div>
+      <div class="theme-switcher" id="theme-switcher" role="group" aria-label="Selezione tema">
+        <button class="theme-tab" data-theme="global.css"
+                aria-pressed="false" aria-label="Attiva tema Classic">
+          <span class="theme-tab-swatch theme-swatch-classic" aria-hidden="true"></span>
+          Classic
+        </button>
+        <button class="theme-tab" data-theme="global2.css"
+                aria-pressed="false" aria-label="Attiva tema Aurora">
+          <span class="theme-tab-swatch theme-swatch-aurora" aria-hidden="true"></span>
+          Aurora
+        </button>
+        <button class="theme-tab" data-theme="global3.css"
+                aria-pressed="false" aria-label="Attiva tema Brutale">
+          <span class="theme-tab-swatch theme-swatch-brutale" aria-hidden="true"></span>
+          Brutale
+        </button>
+      </div>
       <div class="sidebar-section-label">Sistema</div>
       <a href="../logout.php">
         <span class="nav-icon">
@@ -124,8 +143,8 @@ requireLoginPage('../login.php');
         <h2 class="card-title">Elenco Esperienze</h2>
         <div style="display:flex;gap:.75rem;align-items:center;">
           <input type="search" id="search-input" class="form-control"
-                 style="width:220px;font-size:var(--fs-sm);"
-                 placeholder="Cerca…" oninput="filterTable()" />
+                 style="width:280px;font-size:var(--fs-sm);"
+                 placeholder="Cerca per periodo, n° studenti, codice…" oninput="filterTable()" />
           <button class="btn btn-primary" id="btn-nuova">＋ Nuova Esperienza</button>
         </div>
       </div>
