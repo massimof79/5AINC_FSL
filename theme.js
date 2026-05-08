@@ -55,5 +55,42 @@
         window.setTheme(btn.dataset.theme);
       });
     });
+
+    /* ── Mobile sidebar backdrop ─────────────────────────────── */
+    var sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+
+    var backdrop = document.createElement('div');
+    backdrop.id = 'sidebar-backdrop';
+    backdrop.style.cssText = [
+      'position:fixed',
+      'inset:0',
+      'background:rgba(0,0,0,0.42)',
+      'z-index:99',
+      'display:none',
+      'cursor:pointer'
+    ].join(';');
+    document.body.appendChild(backdrop);
+
+    function syncBackdrop() {
+      backdrop.style.display = sidebar.classList.contains('is-open') ? 'block' : 'none';
+    }
+
+    backdrop.addEventListener('click', function () {
+      sidebar.classList.remove('is-open');
+      syncBackdrop();
+    });
+
+    /* Watch sidebar class changes (toggle button handled by each page's inline JS) */
+    var mo = new MutationObserver(syncBackdrop);
+    mo.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+
+    /* Close on Escape */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && sidebar.classList.contains('is-open')) {
+        sidebar.classList.remove('is-open');
+        syncBackdrop();
+      }
+    });
   });
 }());

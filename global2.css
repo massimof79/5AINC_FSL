@@ -982,16 +982,33 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 
 /* ── 14. Responsive ───────────────────────────────────────── */
 @media (max-width: 900px) {
-  .sidebar { transform: translateX(-100%); transition: transform var(--t-md) var(--ease); }
+  .sidebar { top: var(--topbar-h); height: calc(100vh - var(--topbar-h)); transform: translateX(-100%); transition: transform var(--t-md) var(--ease); }
   .sidebar.is-open { transform: translateX(0); }
   .topbar, .main-content { left: 0; margin-left: 0; }
+  /* Topbar above sidebar so burger button stays clickable */
+  .topbar { z-index: 110; }
   .main-content { padding: 1.25rem; }
   .modal { max-width: 100%; border-radius: var(--radius-lg); }
 }
 
+/* Card-header search+button stack on narrow screens */
+@media (max-width: 640px) {
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .card-header > div {
+    flex-wrap: wrap;
+  }
+  .card-header .form-control {
+    width: 100% !important;
+    min-width: 0;
+  }
+}
+
 @media (max-width: 480px) {
   .form-row { grid-template-columns: 1fr; }
-  .topbar-title { font-size: var(--fs-base); }
+  .topbar-title { display: none; }
   .btn-lg { width: 100%; justify-content: center; }
   .topbar { padding: 0 1.25rem; }
   .hero-title { font-size: 1.4rem; }

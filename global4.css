@@ -1,5 +1,5 @@
 /* ============================================================
-   PCTO Connect — Global Stylesheet (Theme 3: Brutale)
+   PCTO Connect — Global Stylesheet (Theme 4: Brutale)
    Progetto: 5AINC_FSL — Ispirazione: Olivetti Valentine, 1969
    Drop-in replacement for global.css
    ============================================================ */
@@ -7,24 +7,23 @@
 /* ── 1. CSS Custom Properties ────────────────────────────── */
 :root {
   /* Brand — vermillion / ink / cream */
-  --primary:      #1a1714;    /* ink */
-  --secondary:    #3d3529;    /* warm dark */
-  --accent:       #cc3300;    /* Olivetti vermillion */
+  --primary:      #1a1714;
+  --secondary:    #3d3529;
+  --accent:       #cc3300;
   --danger:       #990000;
   --warning:      #d96800;
   --info:         #003a8c;
 
   --success:      #1a6b1a;
-  --bg-light:     #f4f0e8;    /* warm cream */
+  --bg-light:     #f4f0e8;
   --bg-card:      #ffffff;
   --text:         #1a1714;
-  --text-muted:   #7a6f61;    /* warm gray */
-  --border:       #1a1714;    /* dark hard border */
+  --text-muted:   #7a6f61;
+  --border:       #1a1714;
 
   --sidebar-w:    260px;
   --topbar-h:     60px;
 
-  /* Brutalist — near-zero radius, hard offset shadows */
   --radius:       0px;
   --radius-lg:    2px;
   --shadow:       3px 3px 0 #1a1714;
@@ -45,7 +44,6 @@
 
   --radius-xl:     4px;
 
-  /* Extended palette */
   --accent-dim:    rgba(204,51,0,0.1);
   --accent-dark:   #991f00;
   --accent-glow:   rgba(204,51,0,0.2);
@@ -53,13 +51,11 @@
   --danger-dim:    rgba(153,0,0,0.1);
   --border-subtle: #e0d8cc;
 
-  /* Shadow scale */
   --shadow-xs:     2px 2px 0 #1a1714;
   --shadow-sm:     2px 2px 0 #1a1714;
   --shadow-xl:     8px 8px 0 #1a1714;
   --shadow-accent: 4px 4px 0 #cc3300;
 
-  /* Sidebar-specific tokens (sidebar is light sand, not dark) */
   --sidebar-bg:       #e8e0d2;
   --sidebar-text:     #1a1714;
   --sidebar-muted:    rgba(26,23,20,0.45);
@@ -91,13 +87,12 @@ a:hover { text-decoration: underline; }
 ul { list-style: none; }
 button, input, select, textarea { font-family: inherit; }
 
-/* ── 3. Layout: Sidebar + Main ───────────────────────────── */
+/* ── 3. Layout ───────────────────────────────────────────── */
 .app-shell {
   display: flex;
   min-height: 100vh;
 }
 
-/* ▸ Sidebar — warm sand, NOT dark ◂ */
 .sidebar {
   position: fixed;
   top: 0; left: 0;
@@ -207,7 +202,6 @@ button, input, select, textarea { font-family: inherit; }
   white-space: nowrap;
 }
 
-/* ▸ Topbar ◂ */
 .topbar {
   position: fixed;
   top: 0;
@@ -264,7 +258,6 @@ button, input, select, textarea { font-family: inherit; }
   font-weight: 900;
 }
 
-/* ▸ Main content ◂ */
 .main-content {
   margin-left: var(--sidebar-w);
   margin-top: var(--topbar-h);
@@ -447,7 +440,6 @@ tbody tr:last-child td { border-bottom: none; }
   text-align: center;
   padding: 3rem 1rem;
   color: var(--text-muted);
-  font-style: normal;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-size: var(--fs-sm);
@@ -648,7 +640,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .badge-status.rejected { background: #f8d4d4; color: #880000; }
 .badge-status.active   { background: #d4e4f8; color: #002a6e; }
 
-/* ── 10. Toast Notifications ─────────────────────────────── */
+/* ── 10. Toast ───────────────────────────────────────────── */
 #toast-container {
   position: fixed;
   top: calc(var(--topbar-h) + 0.75rem);
@@ -682,13 +674,10 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 
 .toast.toast-success { border-left-color: var(--success); }
 .toast.toast-success .toast-icon { color: var(--success); }
-
 .toast.toast-danger  { border-left-color: var(--danger); }
 .toast.toast-danger  .toast-icon { color: var(--danger); }
-
 .toast.toast-warning { border-left-color: var(--warning); }
 .toast.toast-warning .toast-icon { color: var(--warning); }
-
 .toast.toast-info    { border-left-color: var(--info); }
 .toast.toast-info    .toast-icon { color: var(--info); }
 
@@ -703,13 +692,12 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   from { opacity: 0; transform: translateX(20px); }
   to   { opacity: 1; transform: translateX(0); }
 }
-
 @keyframes toastOut {
   from { opacity: 1; transform: translateX(0); }
   to   { opacity: 0; transform: translateX(20px); }
 }
 
-/* ── 11. Utility Classes ─────────────────────────────────── */
+/* ── 11. Utility ─────────────────────────────────────────── */
 .text-muted   { color: var(--text-muted); }
 .text-danger  { color: var(--danger); }
 .text-success { color: var(--success); }
@@ -733,7 +721,6 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .flex-wrap   { flex-wrap: wrap; }
 .flex-1      { flex: 1; }
 
-/* Spinner — square, steps timing for mechanical feel */
 .spinner {
   display: inline-block;
   width: 18px; height: 18px;
@@ -745,7 +732,6 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Page section header */
 .page-header { margin-bottom: 1.5rem; }
 
 .page-header h1 {
@@ -762,7 +748,6 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   font-size: var(--fs-sm);
 }
 
-/* Stats cards */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -781,7 +766,6 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   transition: box-shadow var(--transition), transform var(--transition);
 }
 
-/* Vertical accent bar replaces top gradient strip */
 .stat-card::before {
   content: '';
   position: absolute;
@@ -829,7 +813,6 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   box-shadow: var(--shadow-lg);
 }
 
-/* Right-edge accent stripe */
 .dashboard-hero::before {
   content: '';
   position: absolute;
@@ -840,7 +823,6 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 }
 
 .dashboard-hero::after { display: none; }
-
 .dashboard-hero > * { position: relative; z-index: 1; }
 
 .hero-icon {
@@ -1005,6 +987,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 }
 
 .theme-swatch-classic  { background: #27ae60; }
+.theme-swatch-obsidian { background: #6366f1; }
 .theme-swatch-aurora   { background: #0e7490; }
 .theme-swatch-brutale  { background: #cc3300; }
 
