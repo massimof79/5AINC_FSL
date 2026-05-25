@@ -3,7 +3,7 @@
 (function () {
   var THEMES  = ['global.css', 'global2.css', 'global3.css'];
   var KEY     = 'fsl-theme';
-  var DEFAULT = 'global2.css';
+  var DEFAULT = 'global3.css';
 
   function getLink() { return document.getElementById('theme-link'); }
 
