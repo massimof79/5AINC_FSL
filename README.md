@@ -1,178 +1,178 @@
 # PCTOConnect — 5AINC\_FSL
 
-> A full-stack web platform for managing PCTO internship programs, developed collaboratively by class **5AINC** as a school project.
+> Piattaforma web completa per la gestione delle esperienze PCTO, sviluppata collaborativamente dalla classe **5AINC** come progetto scolastico.
 
 ---
 
-## Table of Contents
+## Indice
 
-1. [What is PCTO?](#what-is-pcto)
-2. [Project Overview](#project-overview)
-3. [Features](#features)
-4. [Tech Stack](#tech-stack)
-5. [Architecture](#architecture)
-6. [Directory Structure](#directory-structure)
-7. [Database Schema](#database-schema)
-8. [Modules](#modules)
-   - [Gruppo 1 — Companies](#gruppo-1--companies-aziende)
-   - [Gruppo 2 — Availability](#gruppo-2--availability-disponibilità)
-   - [Gruppo 3 — Experiences](#gruppo-3--experiences-esperienze)
-   - [Gruppo 4 — Personnel](#gruppo-4--personnel-personale)
-9. [Shared Infrastructure](#shared-infrastructure)
-10. [Theme System](#theme-system)
-11. [Authentication](#authentication)
-12. [API Reference](#api-reference)
-13. [Installation](#installation)
-14. [Configuration](#configuration)
-15. [Usage](#usage)
+1. [Cos'è il PCTO?](#cosè-il-pcto)
+2. [Panoramica del progetto](#panoramica-del-progetto)
+3. [Funzionalità](#funzionalità)
+4. [Tecnologie utilizzate](#tecnologie-utilizzate)
+5. [Architettura](#architettura)
+6. [Struttura dei file](#struttura-dei-file)
+7. [Schema del database](#schema-del-database)
+8. [Moduli](#moduli)
+   - [Gruppo 1 — Aziende](#gruppo-1--aziende)
+   - [Gruppo 2 — Disponibilità](#gruppo-2--disponibilità)
+   - [Gruppo 3 — Esperienze](#gruppo-3--esperienze)
+   - [Gruppo 4 — Personale](#gruppo-4--personale)
+9. [Infrastruttura condivisa](#infrastruttura-condivisa)
+10. [Sistema dei temi](#sistema-dei-temi)
+11. [Autenticazione](#autenticazione)
+12. [Riferimento API](#riferimento-api)
+13. [Installazione](#installazione)
+14. [Configurazione](#configurazione)
+15. [Utilizzo](#utilizzo)
 16. [Team](#team)
 
 ---
 
-## What is PCTO?
+## Cos'è il PCTO?
 
-**PCTO** (*Percorsi per le Competenze Trasversali e l'Orientamento*) is the Italian mandatory work-study alternance program for high school students. Every student must complete a minimum number of hours of practical work experience at external companies during their final school years.
+Il **PCTO** (*Percorsi per le Competenze Trasversali e l'Orientamento*) è il programma obbligatorio di alternanza scuola-lavoro per gli studenti delle scuole superiori italiane. Ogni studente deve completare un numero minimo di ore di esperienza pratica presso aziende esterne durante gli ultimi anni scolastici.
 
-Managing PCTO involves coordinating:
-- **Companies** that offer internship positions
-- **Availability slots** (when and how many students a company can host)
-- **Experiences** (the actual PCTO sessions that took place)
-- **School tutors** (teachers who oversee student progress)
-- **Company tutors** (employees who mentor students on-site)
-- **Students** and their assigned experiences
+Gestire il PCTO significa coordinare:
+- **Aziende** che offrono posizioni di tirocinio
+- **Disponibilità** (quando e quanti studenti un'azienda può accogliere)
+- **Esperienze** (le sessioni PCTO effettivamente svolte)
+- **Tutor scolastici** (insegnanti che supervisionano il percorso degli studenti)
+- **Tutor aziendali** (dipendenti che affiancano gli studenti in sede)
+- **Studenti** e le esperienze loro assegnate
 
-PCTOConnect centralizes all of this into one web application.
-
----
-
-## Project Overview
-
-PCTOConnect is a **browser-based management system** with a PHP backend, a MySQL database, and a vanilla JavaScript + CSS frontend. There is no external JavaScript framework — everything is built from scratch with modern web standards.
-
-The project was developed in **four groups**, each responsible for a different domain of the application. All groups share a common visual design system, authentication layer, and database connection module.
-
-The application requires a login to access any page. Once authenticated, users can navigate between modules using the sidebar, create and edit records through modal dialogs, and search or paginate through data in tables.
+PCTOConnect centralizza tutto questo in un'unica applicazione web.
 
 ---
 
-## Features
+## Panoramica del progetto
 
-- **Secure authentication** — session-based login with bcrypt password hashing
-- **Company management** — full CRUD for companies (Aziende), with VAT validation
-- **Availability management** — manage internship slots offered by companies
-- **Experience management** — track completed PCTO sessions with hours and linked tutors
-- **School tutor management** — manage the teachers who supervise PCTO activities
-- **Company tutor management** — manage the company-side mentors
-- **Student management** — full student registry with linked experiences and applications
-- **Live search and pagination** — every table is searchable and paginated
-- **Three visual themes** — switchable at runtime, persisted via localStorage
-- **Responsive layout** — sidebar collapses to a hamburger menu on screens ≤ 900 px
-- **Toast notifications** — non-blocking feedback for every user action
-- **WCAG AA contrast** — all themes pass accessibility contrast requirements
-- **No page reloads** — all CRUD operations use the Fetch API with JSON
+PCTOConnect è un **sistema di gestione basato su browser** con un backend PHP, un database MySQL e un frontend in JavaScript puro e CSS. Non viene utilizzato alcun framework JavaScript esterno — tutto è costruito da zero con gli standard web moderni.
+
+Il progetto è stato sviluppato in **quattro gruppi**, ognuno responsabile di un dominio diverso dell'applicazione. Tutti i gruppi condividono un sistema di design comune, un livello di autenticazione e un modulo di connessione al database.
+
+L'applicazione richiede un login per accedere a qualsiasi pagina. Una volta autenticati, gli utenti possono navigare tra i moduli tramite la barra laterale, creare e modificare record attraverso finestre modali, e cercare o sfogliare i dati nelle tabelle.
 
 ---
 
-## Tech Stack
+## Funzionalità
 
-| Layer | Technology |
+- **Autenticazione sicura** — login basato su sessione con hashing bcrypt delle password
+- **Gestione aziende** — CRUD completo per le aziende, con validazione della Partita IVA
+- **Gestione disponibilità** — gestione degli slot di tirocinio offerti dalle aziende
+- **Gestione esperienze** — tracciamento delle sessioni PCTO completate con ore e tutor collegati
+- **Gestione tutor scolastici** — gestione degli insegnanti che supervisionano le attività PCTO
+- **Gestione tutor aziendali** — gestione dei mentori lato azienda
+- **Gestione studenti** — anagrafica completa con esperienze e candidature collegate
+- **Ricerca live e paginazione** — ogni tabella è ricercabile e paginata
+- **Tre temi visivi** — cambiabili a runtime, persistiti tramite localStorage
+- **Layout responsivo** — la barra laterale si riduce a menu hamburger su schermi ≤ 900 px
+- **Notifiche toast** — feedback non bloccante per ogni azione utente
+- **Contrasto WCAG AA** — tutti i temi superano i requisiti di accessibilità
+- **Nessun ricaricamento di pagina** — tutte le operazioni CRUD usano la Fetch API con JSON
+
+---
+
+## Tecnologie utilizzate
+
+| Livello | Tecnologia |
 |---|---|
-| Server language | PHP 8.1+ (strict types, PDO) |
+| Linguaggio server | PHP 8.1+ (strict types, PDO) |
 | Database | MySQL / MariaDB 10.4+ |
-| Frontend markup | HTML5 (semantic elements) |
-| Frontend style | CSS3 (custom properties, Grid, Flexbox) |
-| Frontend logic | JavaScript ES2020+ (Fetch API, async/await) |
-| Fonts | Google Fonts — Inter |
-| Icons | Custom inline SVG library (`icons/icons.js`) |
-| Authentication | PHP sessions + bcrypt (`password_hash`) |
-| Database access | PDO with prepared statements |
+| Markup frontend | HTML5 (elementi semantici) |
+| Stile frontend | CSS3 (custom properties, Grid, Flexbox) |
+| Logica frontend | JavaScript ES2020+ (Fetch API, async/await) |
+| Font | Google Fonts — Inter |
+| Icone | Libreria SVG inline personalizzata (`icons/icons.js`) |
+| Autenticazione | Sessioni PHP + bcrypt (`password_hash`) |
+| Accesso al database | PDO con prepared statements |
 
-No npm, no build step, no framework. Open a PHP-capable web server and it runs.
+Nessun npm, nessuna build, nessun framework. Basta un server web con supporto PHP per farlo funzionare.
 
 ---
 
-## Architecture
+## Architettura
 
 ```
 Browser
   │
-  ├── Loads HTML page (PHP renders initial shell)
-  │     └── <link id="theme-link"> — active CSS file
-  │     └── theme.js — reads localStorage, swaps CSS before first paint (FOUC prevention)
+  ├── Carica la pagina HTML (PHP genera lo scheletro iniziale)
+  │     └── <link id="theme-link"> — file CSS attivo
+  │     └── theme.js — legge localStorage, sostituisce il CSS prima del primo render (prevenzione FOUC)
   │
-  ├── JavaScript (per-module .js file) calls REST endpoints via Fetch API
-  │     └── Returns JSON {success, message, data}
+  ├── JavaScript (file .js per modulo) chiama gli endpoint REST tramite Fetch API
+  │     └── Restituisce JSON {success, message, data}
   │
-  └── PHP REST endpoints
-        ├── requireLoginApi() — rejects unauthenticated requests with HTTP 401
-        ├── PDO prepared statement — query database
-        └── echo json_encode(...) — respond to browser
+  └── Endpoint REST PHP
+        ├── requireLoginApi() — rifiuta le richieste non autenticate con HTTP 401
+        ├── PDO prepared statement — interroga il database
+        └── echo json_encode(...) — risponde al browser
 ```
 
-Every page follows the same pattern:
-1. PHP checks session on page load; redirects to `login.php` if not authenticated.
-2. The page skeleton (sidebar, topbar, empty table) renders immediately.
-3. The module's JavaScript file fires on `DOMContentLoaded`, calls the API, and fills the table.
-4. User interactions (create, edit, delete) open a modal, submit via `fetch()`, and update the table without reloading.
+Ogni pagina segue lo stesso schema:
+1. PHP verifica la sessione al caricamento della pagina; reindirizza a `login.php` se non autenticato.
+2. Lo scheletro della pagina (barra laterale, topbar, tabella vuota) viene renderizzato immediatamente.
+3. Il file JavaScript del modulo si attiva su `DOMContentLoaded`, chiama l'API e riempie la tabella.
+4. Le interazioni utente (crea, modifica, elimina) aprono una modale, inviano via `fetch()` e aggiornano la tabella senza ricaricare.
 
 ---
 
-## Directory Structure
+## Struttura dei file
 
 ```
 5AINC_FSL/
 │
-├── index.php                   # Dashboard — entry point after login
-├── login.php                   # Login form
-├── logout.php                  # Session termination
-├── register.php                # User registration
+├── index.php                   # Dashboard — punto di ingresso dopo il login
+├── login.php                   # Form di login
+├── logout.php                  # Terminazione della sessione
+├── register.php                # Registrazione utente
 │
-├── config.php                  # PDO database connection (Gruppo 1)
-├── auth.php                    # Session helper functions (shared)
-├── api.php                     # Unified REST API router (shared)
-├── api_session.php             # Session state endpoint
+├── config.php                  # Connessione PDO al database (Gruppo 1)
+├── auth.php                    # Funzioni di gestione sessione (condiviso)
+├── api.php                     # Router REST API unificato (condiviso)
+├── api_session.php             # Endpoint stato sessione
 │
-├── theme.js                    # 3-way theme switcher (FOUC-safe)
-├── global.css                  # Theme 1: Classic (navy/green)
-├── global2.css                 # Theme 2: Aurora (petrol/teal)
-├── global3.css                 # Theme 3: Brutale (Olivetti cream/vermillion)
+├── theme.js                    # Switcher a 3 temi (FOUC-safe)
+├── global.css                  # Tema 1: Classic (blu navy / verde)
+├── global2.css                 # Tema 2: Aurora (petrolio / teal)
+├── global3.css                 # Tema 3: Brutale (crema Olivetti / vermillion)
 │
-├── 5ainc_fsl.sql               # Full database schema with sample data
+├── 5ainc_fsl.sql               # Schema completo del database con dati di esempio
 │
 ├── icons/
-│   ├── icons.js                # SVG icon constants (status, nav, actions)
-│   └── *.svg                   # Individual icon files
+│   ├── icons.js                # Costanti SVG (stato, navigazione, azioni)
+│   └── *.svg                   # File icone singoli
 │
 ├── Gruppo1/
-│   ├── index_aziende.php       # Companies page
-│   ├── aziende.js              # Companies frontend logic
-│   └── aziende_middleware.php  # Companies REST API
+│   ├── index_aziende.php       # Pagina aziende
+│   ├── aziende.js              # Logica frontend aziende
+│   └── aziende_middleware.php  # API REST aziende
 │
 ├── Gruppo 2/
-│   ├── disponibilità.php       # Availability page (HTML + inline JS)
-│   └── middlewere.php          # Availability REST API
+│   ├── disponibilità.php       # Pagina disponibilità (HTML + JS inline)
+│   └── middlewere.php          # API REST disponibilità
 │
 ├── Gruppo 3/
-│   ├── esperienze.php          # Experiences page
-│   ├── esperienze.js           # Experiences frontend logic
-│   └── api_esperienze.php      # Experiences REST API
+│   ├── esperienze.php          # Pagina esperienze
+│   ├── esperienze.js           # Logica frontend esperienze
+│   └── api_esperienze.php      # API REST esperienze
 │
 └── Gruppo4/
-    ├── tutor_scolastici.html   # School tutors page
-    ├── tutor_scolastici.js     # School tutors frontend logic
-    ├── tutor_aziendali.html    # Company tutors page
-    ├── tutor_aziendali.js      # Company tutors frontend logic
-    ├── studenti.html           # Students page
-    └── studenti.js             # Students frontend logic
+    ├── tutor_scolastici.html   # Pagina tutor scolastici
+    ├── tutor_scolastici.js     # Logica frontend tutor scolastici
+    ├── tutor_aziendali.html    # Pagina tutor aziendali
+    ├── tutor_aziendali.js      # Logica frontend tutor aziendali
+    ├── studenti.html           # Pagina studenti
+    └── studenti.js             # Logica frontend studenti
 ```
 
 ---
 
-## Database Schema
+## Schema del database
 
-The database is named `5AINC_FSL`. Import `5ainc_fsl.sql` to create all tables, views, and sample data.
+Il database si chiama `5AINC_FSL`. Importare `5ainc_fsl.sql` per creare tutte le tabelle, le viste e i dati di esempio.
 
-### Entity-Relationship Overview
+### Panoramica delle relazioni
 
 ```
 AZIENDA ──< DISPONIBILITA ──< ESPERIENZA >── TUTOR_SCOLASTICO
@@ -183,250 +183,250 @@ STUDENTE >── ESPERIENZA
 STUDENTE >── CANDIDATURA
 ```
 
-### Tables
+### Tabelle
 
-#### `AZIENDA` — Companies
-| Column | Type | Notes |
+#### `AZIENDA` — Aziende
+| Colonna | Tipo | Note |
 |---|---|---|
-| `codice_azienda` | INT | Primary key, auto-increment |
-| `ragione_sociale` | VARCHAR | Company name |
-| `partita_iva` | VARCHAR(11) | VAT number, unique, 11 digits |
-| `sede_legale` | VARCHAR | Registered address |
-| `sede_operativa` | VARCHAR | Operational address |
+| `codice_azienda` | INT | Chiave primaria, auto-increment |
+| `ragione_sociale` | VARCHAR | Nome dell'azienda |
+| `partita_iva` | VARCHAR(11) | P.IVA, univoca, 11 cifre |
+| `sede_legale` | VARCHAR | Indirizzo della sede legale |
+| `sede_operativa` | VARCHAR | Indirizzo della sede operativa |
 
-#### `DISPONIBILITA` — Availability Slots
-| Column | Type | Notes |
+#### `DISPONIBILITA` — Disponibilità
+| Colonna | Tipo | Note |
 |---|---|---|
-| `codice_disponibilita` | INT | Primary key |
-| `periodo_previsto` | DATE | When the slot is offered |
-| `numero_studenti` | INT | Max students (> 0) |
-| `descrizione` | TEXT | Description of the activity |
-| `competenze` | TEXT | Required skills |
-| `indirizzo_consigliato` | VARCHAR | Recommended school program |
+| `codice_disponibilita` | INT | Chiave primaria |
+| `periodo_previsto` | DATE | Periodo dello slot offerto |
+| `numero_studenti` | INT | Studenti massimi (> 0) |
+| `descrizione` | TEXT | Descrizione dell'attività |
+| `competenze` | TEXT | Competenze richieste |
+| `indirizzo_consigliato` | VARCHAR | Indirizzo di studi consigliato |
 | `codice_azienda` | INT | FK → AZIENDA (CASCADE DELETE) |
 
-#### `ESPERIENZA` — PCTO Experiences
-| Column | Type | Notes |
+#### `ESPERIENZA` — Esperienze PCTO
+| Colonna | Tipo | Note |
 |---|---|---|
-| `codice_esperienza` | INT | Primary key |
-| `periodo_effettivo` | VARCHAR | Actual period (free text) |
-| `numero_ore_previste` | INT | Planned hours (≥ 0) |
-| `numero_ore_svolte` | INT | Completed hours (≥ 0) |
-| `numero_studenti` | INT | Students involved (> 0) |
+| `codice_esperienza` | INT | Chiave primaria |
+| `periodo_effettivo` | VARCHAR | Periodo reale (testo libero) |
+| `numero_ore_previste` | INT | Ore pianificate (≥ 0) |
+| `numero_ore_svolte` | INT | Ore effettivamente svolte (≥ 0) |
+| `numero_studenti` | INT | Studenti coinvolti (> 0) |
 | `codice_docente` | INT | FK → TUTOR_SCOLASTICO (UPDATE CASCADE) |
 | `codice_disponibilita` | INT | FK → DISPONIBILITA (UPDATE CASCADE) |
 | `codice_tutor` | INT | FK → TUTOR_AZIENDALE (UPDATE CASCADE) |
 
-#### `TUTOR_SCOLASTICO` — School Tutors
-| Column | Type | Notes |
+#### `TUTOR_SCOLASTICO` — Tutor Scolastici
+| Colonna | Tipo | Note |
 |---|---|---|
-| `codice_docente` | INT | Primary key |
-| `nome` | VARCHAR | First name |
-| `cognome` | VARCHAR | Last name |
-| `tipo` | ENUM | `'dipartimento'` or `'area disciplinare'` |
-| `numero_studenti` | INT | Number of students supervised |
+| `codice_docente` | INT | Chiave primaria |
+| `nome` | VARCHAR | Nome |
+| `cognome` | VARCHAR | Cognome |
+| `tipo` | ENUM | `'dipartimento'` oppure `'area disciplinare'` |
+| `numero_studenti` | INT | Numero di studenti supervisionati |
 
-#### `TUTOR_AZIENDALE` — Company Tutors
-| Column | Type | Notes |
+#### `TUTOR_AZIENDALE` — Tutor Aziendali
+| Colonna | Tipo | Note |
 |---|---|---|
-| `codice_tutor` | INT | Primary key |
-| `nome` | VARCHAR | First name |
-| `cognome` | VARCHAR | Last name |
-| `ruolo` | VARCHAR | Job title (e.g. "Software Engineer") |
-| `email` | VARCHAR | Unique email address |
+| `codice_tutor` | INT | Chiave primaria |
+| `nome` | VARCHAR | Nome |
+| `cognome` | VARCHAR | Cognome |
+| `ruolo` | VARCHAR | Ruolo in azienda (es. "Software Engineer") |
+| `email` | VARCHAR | Indirizzo email univoco |
 
-#### `STUDENTE` — Students
-| Column | Type | Notes |
+#### `STUDENTE` — Studenti
+| Colonna | Tipo | Note |
 |---|---|---|
-| `codice_studente` | INT | Primary key |
-| `nome` | VARCHAR | First name |
-| `cognome` | VARCHAR | Last name |
-| `data_di_nascita` | DATE | Date of birth |
-| `luogo_di_nascita` | VARCHAR | Place of birth |
-| `indirizzo` | VARCHAR | Home address |
-| `email` | VARCHAR | Unique email address |
-| `classe` | VARCHAR | School class (e.g. `4AI`) |
-| `indirizzo_di_studi` | VARCHAR | School program (e.g. `Informatica`) |
-| `codice_esperienza` | INT | FK → ESPERIENZA (SET NULL on delete) |
-| `codice_candidatura` | INT | FK → CANDIDATURA (SET NULL on delete) |
+| `codice_studente` | INT | Chiave primaria |
+| `nome` | VARCHAR | Nome |
+| `cognome` | VARCHAR | Cognome |
+| `data_di_nascita` | DATE | Data di nascita |
+| `luogo_di_nascita` | VARCHAR | Luogo di nascita |
+| `indirizzo` | VARCHAR | Indirizzo di residenza |
+| `email` | VARCHAR | Email univoca |
+| `classe` | VARCHAR | Classe scolastica (es. `4AI`) |
+| `indirizzo_di_studi` | VARCHAR | Indirizzo di studi (es. `Informatica`) |
+| `codice_esperienza` | INT | FK → ESPERIENZA (SET NULL all'eliminazione) |
+| `codice_candidatura` | INT | FK → CANDIDATURA (SET NULL all'eliminazione) |
 
-#### `CANDIDATURA` — Applications
-| Column | Type | Notes |
+#### `CANDIDATURA` — Candidature
+| Colonna | Tipo | Note |
 |---|---|---|
-| `codice_candidatura` | INT | Primary key |
-| `data_candidatura` | DATE | Application date |
-| `lettera_motivazionale` | TEXT | Cover letter |
+| `codice_candidatura` | INT | Chiave primaria |
+| `data_candidatura` | DATE | Data della candidatura |
+| `lettera_motivazionale` | TEXT | Lettera motivazionale |
 | `stato_candidatura` | ENUM | `inserita`, `in valutazione`, `accettata`, `rifiutata`, `ritirata` |
 
-#### `UTENTI` — User Accounts
-| Column | Type | Notes |
+#### `UTENTI` — Account Utente
+| Colonna | Tipo | Note |
 |---|---|---|
-| `ID` | INT | Primary key |
-| `username` | VARCHAR | Unique username |
-| `password` | VARCHAR | bcrypt hash |
+| `ID` | INT | Chiave primaria |
+| `username` | VARCHAR | Username univoco |
+| `password` | VARCHAR | Hash bcrypt |
 
-### Views
+### Viste
 
-**`v_studenti_anagrafica`** — A read-only view exposing a safe subset of student fields (excludes sensitive internal codes). Used for display purposes.
+**`v_studenti_anagrafica`** — Vista in sola lettura che espone un sottoinsieme sicuro dei campi studente (esclude i codici interni sensibili). Utilizzata per la visualizzazione.
 
 ---
 
-## Modules
+## Moduli
 
-### Gruppo 1 — Companies (`Aziende`)
+### Gruppo 1 — Aziende
 
-**Page:** `Gruppo1/index_aziende.php`  
+**Pagina:** `Gruppo1/index_aziende.php`  
 **API:** `Gruppo1/aziende_middleware.php`  
-**Logic:** `Gruppo1/aziende.js`
+**Logica:** `Gruppo1/aziende.js`
 
-Manages the companies that participate in PCTO programs.
+Gestisce le aziende che partecipano ai programmi PCTO.
 
-**What you can do:**
-- View the full list of companies in a paginated, searchable table
-- Add a new company (name, VAT number, legal address, operational address)
-- Edit any company's details
-- Delete a company (this also deletes all its availability slots via CASCADE)
+**Cosa si può fare:**
+- Visualizzare l'elenco completo delle aziende in una tabella paginata e ricercabile
+- Aggiungere una nuova azienda (nome, Partita IVA, sede legale, sede operativa)
+- Modificare i dati di qualsiasi azienda
+- Eliminare un'azienda (elimina automaticamente anche tutte le sue disponibilità tramite CASCADE)
 
-**Validation:**
-- VAT number (`Partita IVA`) must be exactly 11 numeric digits
-- All fields are required
+**Validazione:**
+- La Partita IVA deve essere composta esattamente da 11 cifre numeriche
+- Tutti i campi sono obbligatori
 
-**Table columns:** `#`, Company Name, VAT, Legal Address, Operational Address, Actions
+**Colonne della tabella:** `#`, Ragione Sociale, P.IVA, Sede Legale, Sede Operativa, Azioni
 
 ---
 
-### Gruppo 2 — Availability (`Disponibilità`)
+### Gruppo 2 — Disponibilità
 
-**Page:** `Gruppo 2/disponibilità.php`  
+**Pagina:** `Gruppo 2/disponibilità.php`  
 **API:** `Gruppo 2/middlewere.php`
 
-Manages the internship slots that companies offer. A "disponibilità" (availability) is a company's declaration that it can host a certain number of students during a specific period.
+Gestisce gli slot di tirocinio offerti dalle aziende. Una "disponibilità" è la dichiarazione di un'azienda di poter accogliere un certo numero di studenti in un determinato periodo.
 
-**What you can do:**
-- View all availability slots with search by period or description
-- Create a new slot (period, max students, description, required skills, recommended school program)
-- Edit an existing slot
-- Delete a slot
+**Cosa si può fare:**
+- Visualizzare tutti gli slot con ricerca per periodo o descrizione
+- Creare un nuovo slot (periodo, studenti massimi, descrizione, competenze richieste, indirizzo consigliato)
+- Modificare uno slot esistente
+- Eliminare uno slot
 
-**Table columns:** `#`, Period, Description, Actions
+**Colonne della tabella:** `#`, Periodo, Descrizione, Azioni
 
-**Note:** Each availability is linked to a company. When a company is deleted, all its availability slots are deleted automatically.
+**Nota:** Ogni disponibilità è collegata a un'azienda. Quando un'azienda viene eliminata, tutti i suoi slot vengono eliminati automaticamente.
 
 ---
 
-### Gruppo 3 — Experiences (`Esperienze`)
+### Gruppo 3 — Esperienze
 
-**Page:** `Gruppo 3/esperienze.php`  
+**Pagina:** `Gruppo 3/esperienze.php`  
 **API:** `Gruppo 3/api_esperienze.php`  
-**Logic:** `Gruppo 3/esperienze.js`
+**Logica:** `Gruppo 3/esperienze.js`
 
-This is the **core domain module**. An "esperienza" (experience) represents a PCTO session that actually took place — it links a company's availability slot to the school tutor and company tutor who supervised it.
+Questo è il **modulo centrale del dominio**. Un'esperienza rappresenta una sessione PCTO effettivamente svolta — collega uno slot di disponibilità aziendale al tutor scolastico e al tutor aziendale che l'hanno supervisionata.
 
-**What you can do:**
-- View all experiences with joined data (tutor names, availability period) displayed inline
-- Create a new experience with seven fields
-- Edit an existing experience
-- Delete an experience
+**Cosa si può fare:**
+- Visualizzare tutte le esperienze con dati unificati tramite JOIN (nomi dei tutor, periodo della disponibilità)
+- Creare una nuova esperienza con sette campi
+- Modificare un'esperienza esistente
+- Eliminare un'esperienza
 
-**Form fields:**
-| Field | Description |
+**Campi del form:**
+| Campo | Descrizione |
 |---|---|
-| Periodo effettivo | Free-text description of when it happened (e.g. `Mar–Apr 2026`) |
-| Ore previste | Planned hours |
-| Ore svolte | Hours actually completed |
-| Numero studenti | How many students participated |
-| Tutor scolastico | School tutor — dropdown populated from the database |
-| Tutor aziendale | Company tutor — dropdown populated from the database |
-| Disponibilità | Which availability slot this experience fulfilled — dropdown from DB |
+| Periodo effettivo | Descrizione testuale del periodo reale (es. `Mar–Apr 2026`) |
+| Ore previste | Ore pianificate |
+| Ore svolte | Ore effettivamente completate |
+| Numero studenti | Studenti partecipanti |
+| Tutor scolastico | Menu a tendina popolato dal database |
+| Tutor aziendale | Menu a tendina popolato dal database |
+| Disponibilità | Slot di disponibilità collegato — menu a tendina dal database |
 
-**Table columns:** `#`, Period, Planned Hours, Completed Hours, Students, School Tutor, Company Tutor, Availability, Actions
+**Colonne della tabella:** `#`, Periodo, Ore Previste, Ore Svolte, Studenti, Tutor Scolastico, Tutor Aziendale, Disponibilità, Azioni
 
-**Gruppo 3 also maintains `global.css`** — the shared design system used by all pages in the application.
-
----
-
-### Gruppo 4 — Personnel (`Personale`)
-
-Gruppo 4 manages three separate entities, each with its own page.
+**Il Gruppo 3 mantiene anche `global.css`** — il sistema di design condiviso da tutte le pagine dell'applicazione.
 
 ---
 
-#### School Tutors (`Tutor Scolastici`)
+### Gruppo 4 — Personale
 
-**Page:** `Gruppo4/tutor_scolastici.html`  
-**Logic:** `Gruppo4/tutor_scolastici.js`
-
-Manages the teachers who act as school-side supervisors for PCTO experiences.
-
-**Form fields:** First name, Last name, Type (`dipartimento` or `area disciplinare`), Number of students supervised
-
-**Table columns:** `#`, First Name, Last Name, Type, Number of Students, Actions
+Il Gruppo 4 gestisce tre entità distinte, ognuna con la propria pagina.
 
 ---
 
-#### Company Tutors (`Tutor Aziendali`)
+#### Tutor Scolastici
 
-**Page:** `Gruppo4/tutor_aziendali.html`  
-**Logic:** `Gruppo4/tutor_aziendali.js`
+**Pagina:** `Gruppo4/tutor_scolastici.html`  
+**Logica:** `Gruppo4/tutor_scolastici.js`
 
-Manages the company employees who mentor students on-site.
+Gestisce gli insegnanti che svolgono il ruolo di supervisori scolastici per le esperienze PCTO.
 
-**Form fields:** First name, Last name, Role, Email
+**Campi del form:** Nome, Cognome, Tipo (`dipartimento` o `area disciplinare`), Numero di studenti supervisionati
 
-**Table columns:** `#`, First Name, Last Name, Role, Email, Actions
-
----
-
-#### Students (`Studenti`)
-
-**Page:** `Gruppo4/studenti.html`  
-**Logic:** `Gruppo4/studenti.js`
-
-The full student registry. Each student can be linked to a PCTO experience and an application.
-
-**Form fields:** First name, Last name, Date of birth, Place of birth, Address, Email, Class, School program, PCTO Experience (optional, dropdown), Application (optional, dropdown)
-
-**Table columns:** `#`, Student, Date of birth, Place, Address, Email, Class, Program, Experience, Application, Status, Actions
+**Colonne della tabella:** `#`, Nome, Cognome, Tipo, Numero Studenti, Azioni
 
 ---
 
-## Shared Infrastructure
+#### Tutor Aziendali
 
-### Database Connection — `config.php`
+**Pagina:** `Gruppo4/tutor_aziendali.html`  
+**Logica:** `Gruppo4/tutor_aziendali.js`
 
-Establishes a PDO connection to the MySQL database. Used by every API file via `require_once`.
+Gestisce i dipendenti aziendali che affiancano gli studenti durante il tirocinio.
 
-- Host: `127.0.0.1`, Port: `3307` (configurable)
+**Campi del form:** Nome, Cognome, Ruolo, Email
+
+**Colonne della tabella:** `#`, Nome, Cognome, Ruolo, Email, Azioni
+
+---
+
+#### Studenti
+
+**Pagina:** `Gruppo4/studenti.html`  
+**Logica:** `Gruppo4/studenti.js`
+
+L'anagrafica completa degli studenti. Ogni studente può essere collegato a un'esperienza PCTO e a una candidatura.
+
+**Campi del form:** Nome, Cognome, Data di nascita, Luogo di nascita, Indirizzo, Email, Classe, Indirizzo di studi, Esperienza PCTO (opzionale, menu a tendina), Candidatura (opzionale, menu a tendina)
+
+**Colonne della tabella:** `#`, Studente, Data di nascita, Luogo, Indirizzo, Email, Classe, Indirizzo Studi, Esperienza, Candidatura, Stato, Azioni
+
+---
+
+## Infrastruttura condivisa
+
+### Connessione al database — `config.php`
+
+Stabilisce una connessione PDO al database MySQL. Utilizzato da ogni file API tramite `require_once`.
+
+- Host: `127.0.0.1`, Porta: `3307` (configurabile)
 - Database: `5AINC_FSL`
-- Error mode: `PDO::ERRMODE_EXCEPTION` — errors throw exceptions, never expose details to the browser
-- Prepared statement emulation: disabled — real prepared statements only
+- Modalità errori: `PDO::ERRMODE_EXCEPTION` — gli errori lanciano eccezioni, non vengono mai esposti al browser
+- Emulazione prepared statements: disabilitata — solo prepared statements reali
 - Charset: `utf8mb4`
 
-### Authentication — `auth.php`
+### Autenticazione — `auth.php`
 
-Provides session management functions used across all pages and APIs:
+Fornisce le funzioni di gestione sessione usate in tutte le pagine e API:
 
-| Function | Description |
+| Funzione | Descrizione |
 |---|---|
-| `isLoggedIn()` | Returns true if the user has an active session |
-| `requireLoginPage()` | Redirects to `login.php` if not logged in (used in page files) |
-| `requireLoginApi()` | Returns HTTP 401 JSON if not logged in (used in API files) |
-| `loginUser(array)` | Regenerates session ID and sets `$_SESSION['user_id']` and `username` |
-| `logoutUser()` | Clears session data, destroys the session, expires cookies |
-| `verifyUserPassword(input, hash)` | Verifies with `password_verify()`; falls back to hash-equals for legacy plain-text accounts |
+| `isLoggedIn()` | Restituisce true se l'utente ha una sessione attiva |
+| `requireLoginPage()` | Reindirizza a `login.php` se non autenticato (usato nei file pagina) |
+| `requireLoginApi()` | Restituisce HTTP 401 JSON se non autenticato (usato nelle API) |
+| `loginUser(array)` | Rigenera l'ID di sessione e imposta `$_SESSION['user_id']` e `username` |
+| `logoutUser()` | Cancella i dati di sessione, distrugge la sessione, scade i cookie |
+| `verifyUserPassword(input, hash)` | Verifica con `password_verify()`; fallback su hash-equals per account legacy |
 
-### Unified API — `api.php`
+### API unificata — `api.php`
 
-A single entry point that routes requests to the correct module based on the `?entity=` query parameter. All CRUD operations are protected: every request passes through `requireLoginApi()` before reaching any database code.
+Un unico punto di ingresso che instrada le richieste al modulo corretto in base al parametro `?entity=`. Tutte le operazioni CRUD sono protette: ogni richiesta passa per `requireLoginApi()` prima di raggiungere qualsiasi codice di database.
 
-**Supported entities:**
+**Entità supportate:**
 - `?entity=aziende`
 - `?entity=disponibilita`
 - `?entity=esperienze`
 - `?entity=tutor_scolastici`
 - `?entity=tutor_aziendali`
 
-All API responses follow this JSON structure:
+Tutte le risposte API seguono questa struttura JSON:
 
 ```json
 {
@@ -436,137 +436,137 @@ All API responses follow this JSON structure:
 }
 ```
 
-Errors return `"success": false` with an appropriate message and HTTP status code (400, 401, 404, 500).
+Gli errori restituiscono `"success": false` con un messaggio appropriato e il codice HTTP corrispondente (400, 401, 404, 500).
 
-### Icon Library — `icons/icons.js`
+### Libreria icone — `icons/icons.js`
 
-Exports SVG string constants used for status indicators and navigation icons:
+Esporta costanti stringa SVG usate per gli indicatori di stato e le icone di navigazione:
 
 ```javascript
-ICONS.dbOk        // green dot — database connected
-ICONS.dbLoading   // spinning indicator — checking connection
-ICONS.dbErr       // red dot — connection failed
-ICONS.chevronLeft  // pagination arrow
-ICONS.chevronRight // pagination arrow
+ICONS.dbOk        // pallino verde — database connesso
+ICONS.dbLoading   // indicatore rotante — connessione in corso
+ICONS.dbErr       // pallino rosso — connessione fallita
+ICONS.chevronLeft  // freccia paginazione
+ICONS.chevronRight // freccia paginazione
 ```
 
 ---
 
-## Theme System
+## Sistema dei temi
 
-PCTOConnect includes three complete visual themes. The active theme is stored in `localStorage` and applied before the first browser paint — no flash of unstyled content.
+PCTOConnect include tre temi visivi completi. Il tema attivo è salvato in `localStorage` e applicato prima del primo render del browser — nessun "flash" di contenuto non stilizzato.
 
-### Themes
+### Temi disponibili
 
-| Name | File | Palette | Character |
+| Nome | File | Palette | Carattere |
 |---|---|---|---|
-| **Classic** | `global.css` | Navy sidebar, green accent | Clean, professional |
-| **Aurora** | `global2.css` | Deep petrol sidebar, teal accent, pearl background | Modern, clarity-focused |
-| **Brutale** | `global3.css` | Cream/sand sidebar, vermillion accent, near-zero radius | Bold, Olivetti Valentine-inspired |
+| **Classic** | `global.css` | Barra laterale blu navy, accento verde | Pulito, professionale |
+| **Aurora** | `global2.css` | Barra laterale petrolio scuro, accento teal, sfondo perla | Moderno, orientato alla chiarezza |
+| **Brutale** | `global3.css` | Barra laterale crema/sabbia, accento vermillion, bordi netti | Deciso, ispirato alla Olivetti Valentine |
 
-### How to Switch
+### Come cambiare tema
 
-In the sidebar, under the **Tema** section, three buttons are always visible: **Classic**, **Aurora**, **Brutale**. Clicking one:
-1. Saves the choice to `localStorage` (key: `fsl-theme`)
-2. Swaps the `<link id="theme-link">` `href` attribute to the new CSS file
-3. Updates the active state on the theme buttons
+Nella barra laterale, sotto la sezione **Tema**, sono sempre visibili tre pulsanti: **Classic**, **Aurora**, **Brutale**. Cliccandone uno:
+1. La scelta viene salvata in `localStorage` (chiave: `fsl-theme`)
+2. L'attributo `href` del tag `<link id="theme-link">` viene sostituito con il nuovo file CSS
+3. Lo stato attivo sui pulsanti del tema viene aggiornato
 
-The choice is remembered across sessions and page navigations. The switch happens in under one frame — no reload required.
+La scelta viene ricordata tra sessioni e navigazioni tra pagine. Il cambio avviene in meno di un frame — nessun ricaricamento necessario.
 
-### FOUC Prevention
+### Prevenzione del FOUC
 
-`theme.js` is loaded synchronously in `<head>`, immediately after the `<link>` element. It reads `localStorage` and corrects the CSS href before the browser renders anything. This eliminates the "white flash" that would occur if theme switching happened after page load.
-
----
-
-## Authentication
-
-All pages require a valid login session. The flow is:
-
-1. User visits any page → PHP calls `requireLoginPage()` → redirects to `login.php` if not authenticated.
-2. User submits username and password on `login.php`.
-3. PHP queries the `UTENTI` table, verifies the password with `password_verify()`.
-4. On success: `session_regenerate_id(true)` (prevents session fixation), session variables set, redirect to `index.php`.
-5. `logout.php` clears all session data, destroys the session file, and expires the session cookie.
-
-**Password storage:** bcrypt via `password_hash($password, PASSWORD_DEFAULT)`. The cost factor is PHP's current default (10+). Legacy accounts with plain-text passwords are detected and verified via `hash_equals()` — a migration to bcrypt is recommended for production use.
+`theme.js` viene caricato in modo sincrono nel `<head>`, immediatamente dopo il tag `<link>`. Legge `localStorage` e corregge l'`href` del CSS prima che il browser renderizzi qualsiasi cosa. Questo elimina il "flash bianco" che si verificherebbe se il cambio tema avvenisse dopo il caricamento della pagina.
 
 ---
 
-## API Reference
+## Autenticazione
 
-### Companies (`Aziende`)
+Tutte le pagine richiedono una sessione di login valida. Il flusso è:
 
-| Method | URL | Action |
-|---|---|---|
-| `GET` | `/Gruppo1/aziende_middleware.php` | List all companies |
-| `GET` | `/Gruppo1/aziende_middleware.php?id=N` | Get one company |
-| `POST` | `/Gruppo1/aziende_middleware.php` | Create company |
-| `PUT` | `/Gruppo1/aziende_middleware.php?id=N` | Update company |
-| `DELETE` | `/Gruppo1/aziende_middleware.php?id=N` | Delete company |
+1. L'utente visita qualsiasi pagina → PHP chiama `requireLoginPage()` → reindirizza a `login.php` se non autenticato.
+2. L'utente invia username e password su `login.php`.
+3. PHP interroga la tabella `UTENTI` e verifica la password con `password_verify()`.
+4. In caso di successo: `session_regenerate_id(true)` (previene il session fixation), variabili di sessione impostate, redirect a `index.php`.
+5. `logout.php` cancella tutti i dati di sessione, distrugge il file di sessione e scade il cookie di sessione.
 
-### Availability (`Disponibilità`)
-
-| Method | URL | Action |
-|---|---|---|
-| `GET` | `/Gruppo 2/middlewere.php` | List all slots |
-| `GET` | `/Gruppo 2/middlewere.php?id=N` | Get one slot |
-| `POST` | `/Gruppo 2/middlewere.php` | Create slot |
-| `PUT` | `/Gruppo 2/middlewere.php?id=N` | Update slot |
-| `DELETE` | `/Gruppo 2/middlewere.php?id=N` | Delete slot |
-
-### Experiences (`Esperienze`)
-
-| Method | URL | Action |
-|---|---|---|
-| `GET` | `/Gruppo 3/api_esperienze.php` | List all experiences |
-| `GET` | `/Gruppo 3/api_esperienze.php?id=N` | Get one experience |
-| `POST` | `/Gruppo 3/api_esperienze.php` | Create experience |
-| `PUT` | `/Gruppo 3/api_esperienze.php?id=N` | Update experience |
-| `DELETE` | `/Gruppo 3/api_esperienze.php?id=N` | Delete experience |
-| `GET` | `/Gruppo 3/api_esperienze.php?resource=tutor_scolastico` | List school tutors (for dropdown) |
-| `GET` | `/Gruppo 3/api_esperienze.php?resource=tutor_aziendale` | List company tutors (for dropdown) |
-| `GET` | `/Gruppo 3/api_esperienze.php?resource=disponibilita` | List availability slots (for dropdown) |
-
-### Personnel — Unified via `api.php`
-
-| Method | URL | Action |
-|---|---|---|
-| `GET` | `/api.php?entity=tutor_scolastici` | List school tutors |
-| `POST` | `/api.php?entity=tutor_scolastici` | Create school tutor |
-| `PUT` | `/api.php?entity=tutor_scolastici&id=N` | Update school tutor |
-| `DELETE` | `/api.php?entity=tutor_scolastici&id=N` | Delete school tutor |
-| `GET` | `/api.php?entity=tutor_aziendali` | List company tutors |
-| `POST` | `/api.php?entity=tutor_aziendali` | Create company tutor |
-| `PUT` | `/api.php?entity=tutor_aziendali&id=N` | Update company tutor |
-| `DELETE` | `/api.php?entity=tutor_aziendali&id=N` | Delete company tutor |
+**Conservazione delle password:** bcrypt tramite `password_hash($password, PASSWORD_DEFAULT)`. Il cost factor è il default corrente di PHP (10+). Gli account legacy con password in chiaro vengono rilevati e verificati tramite `hash_equals()` — è consigliata una migrazione a bcrypt per uso in produzione.
 
 ---
 
-## Installation
+## Riferimento API
 
-### Prerequisites
+### Aziende
 
-| Requirement | Version |
+| Metodo | URL | Azione |
+|---|---|---|
+| `GET` | `/Gruppo1/aziende_middleware.php` | Elenco tutte le aziende |
+| `GET` | `/Gruppo1/aziende_middleware.php?id=N` | Dettaglio singola azienda |
+| `POST` | `/Gruppo1/aziende_middleware.php` | Crea azienda |
+| `PUT` | `/Gruppo1/aziende_middleware.php?id=N` | Modifica azienda |
+| `DELETE` | `/Gruppo1/aziende_middleware.php?id=N` | Elimina azienda |
+
+### Disponibilità
+
+| Metodo | URL | Azione |
+|---|---|---|
+| `GET` | `/Gruppo 2/middlewere.php` | Elenco tutti gli slot |
+| `GET` | `/Gruppo 2/middlewere.php?id=N` | Dettaglio singolo slot |
+| `POST` | `/Gruppo 2/middlewere.php` | Crea slot |
+| `PUT` | `/Gruppo 2/middlewere.php?id=N` | Modifica slot |
+| `DELETE` | `/Gruppo 2/middlewere.php?id=N` | Elimina slot |
+
+### Esperienze
+
+| Metodo | URL | Azione |
+|---|---|---|
+| `GET` | `/Gruppo 3/api_esperienze.php` | Elenco tutte le esperienze |
+| `GET` | `/Gruppo 3/api_esperienze.php?id=N` | Dettaglio singola esperienza |
+| `POST` | `/Gruppo 3/api_esperienze.php` | Crea esperienza |
+| `PUT` | `/Gruppo 3/api_esperienze.php?id=N` | Modifica esperienza |
+| `DELETE` | `/Gruppo 3/api_esperienze.php?id=N` | Elimina esperienza |
+| `GET` | `/Gruppo 3/api_esperienze.php?resource=tutor_scolastico` | Elenco tutor scolastici (per menu a tendina) |
+| `GET` | `/Gruppo 3/api_esperienze.php?resource=tutor_aziendale` | Elenco tutor aziendali (per menu a tendina) |
+| `GET` | `/Gruppo 3/api_esperienze.php?resource=disponibilita` | Elenco disponibilità (per menu a tendina) |
+
+### Personale — tramite `api.php` unificato
+
+| Metodo | URL | Azione |
+|---|---|---|
+| `GET` | `/api.php?entity=tutor_scolastici` | Elenco tutor scolastici |
+| `POST` | `/api.php?entity=tutor_scolastici` | Crea tutor scolastico |
+| `PUT` | `/api.php?entity=tutor_scolastici&id=N` | Modifica tutor scolastico |
+| `DELETE` | `/api.php?entity=tutor_scolastici&id=N` | Elimina tutor scolastico |
+| `GET` | `/api.php?entity=tutor_aziendali` | Elenco tutor aziendali |
+| `POST` | `/api.php?entity=tutor_aziendali` | Crea tutor aziendale |
+| `PUT` | `/api.php?entity=tutor_aziendali&id=N` | Modifica tutor aziendale |
+| `DELETE` | `/api.php?entity=tutor_aziendali&id=N` | Elimina tutor aziendale |
+
+---
+
+## Installazione
+
+### Prerequisiti
+
+| Requisito | Versione |
 |---|---|
-| PHP | 8.1 or higher |
-| MySQL / MariaDB | 10.4 or higher |
-| PDO extension | Enabled in `php.ini` |
-| PDO MySQL driver | `pdo_mysql` enabled |
-| Web server | Apache, Nginx, or PHP built-in server |
+| PHP | 8.1 o superiore |
+| MySQL / MariaDB | 10.4 o superiore |
+| Estensione PDO | Abilitata in `php.ini` |
+| Driver PDO MySQL | `pdo_mysql` abilitato |
+| Server web | Apache, Nginx, o server built-in di PHP |
 
-### Step-by-Step Setup
+### Configurazione passo per passo
 
-**1. Clone or download the repository**
+**1. Clona o scarica il repository**
 
 ```bash
 git clone https://github.com/massimof79/5AINC_FSL.git
 cd 5AINC_FSL
 ```
 
-**2. Create the database**
+**2. Crea il database**
 
-Open your MySQL client (phpMyAdmin, TablePlus, DBeaver, or the command line) and run:
+Apri il tuo client MySQL (phpMyAdmin, TablePlus, DBeaver o la riga di comando) ed esegui:
 
 ```sql
 CREATE DATABASE `5AINC_FSL` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -574,74 +574,74 @@ USE `5AINC_FSL`;
 SOURCE 5ainc_fsl.sql;
 ```
 
-Or from the terminal:
+Oppure da terminale:
 
 ```bash
 mysql -u root -p < 5ainc_fsl.sql
 ```
 
-This creates all 8 tables, the view, and loads sample data (including two test user accounts).
+Questo crea tutte le 8 tabelle, la vista e carica i dati di esempio (inclusi due account utente di test).
 
-**3. Configure the database connection**
+**3. Configura la connessione al database**
 
-Open `config.php` and update the constants to match your environment:
+Apri `config.php` e aggiorna le costanti in base al tuo ambiente:
 
 ```php
 define('DB_HOST', '127.0.0.1');
-define('DB_PORT', '3306');       // change if your MySQL runs on a different port
+define('DB_PORT', '3306');       // modifica se MySQL usa una porta diversa
 define('DB_NAME', '5AINC_FSL');
-define('DB_USER', 'root');       // your MySQL username
-define('DB_PASS', '');           // your MySQL password
+define('DB_USER', 'root');       // il tuo username MySQL
+define('DB_PASS', '');           // la tua password MySQL
 ```
 
-> **Important:** Do not commit `config.php` with real credentials to a public repository.
+> **Importante:** Non committare `config.php` con credenziali reali in un repository pubblico.
 
-**4. Start a web server**
+**4. Avvia un server web**
 
-Option A — PHP built-in server (development only):
+Opzione A — Server built-in di PHP (solo sviluppo):
 
 ```bash
 php -S localhost:8000
 ```
 
-Then open [http://localhost:8000](http://localhost:8000) in your browser.
+Poi apri [http://localhost:8000](http://localhost:8000) nel browser.
 
-Option B — Apache / XAMPP / WAMP / MAMP:
+Opzione B — Apache / XAMPP / WAMP / MAMP:
 
-Place the project folder inside `htdocs` (XAMPP) or `www` (WAMP/MAMP) and navigate to `http://localhost/5AINC_FSL/`.
+Posiziona la cartella del progetto dentro `htdocs` (XAMPP) o `www` (WAMP/MAMP) e naviga verso `http://localhost/5AINC_FSL/`.
 
-Option C — Nginx:
+Opzione C — Nginx:
 
-Configure a server block pointing to the project directory with PHP-FPM.
+Configura un server block che punta alla directory del progetto con PHP-FPM.
 
-**5. Log in**
+**5. Accedi all'applicazione**
 
-Navigate to `http://localhost:8000/login.php` (or equivalent).
+Naviga su `http://localhost:8000/login.php` (o l'equivalente nel tuo setup).
 
-Default accounts (from sample data):
+Account predefiniti (dai dati di esempio):
 
 | Username | Password |
 |---|---|
-| `miccia` | *(ask team for credentials)* |
-| `michele` | *(ask team for credentials)* |
+| `miccia` | *(chiedere al team)* |
+| `michele` | *(chiedere al team)* |
 
-You will be redirected to the dashboard (`index.php`) on successful login.
+Al login riuscito verrai reindirizzato alla dashboard (`index.php`).
 
 ---
 
-## Configuration
+## Configurazione
 
 ### `config.php` — Database
 
 ```php
-define('DB_HOST', '127.0.0.1');  // Database host
-define('DB_PORT', '3306');        // Port (default MySQL: 3306)
-define('DB_NAME', '5AINC_FSL');  // Database name
-define('DB_USER', 'root');        // MySQL user
-define('DB_PASS', '');            // MySQL password
+define('DB_HOST', '127.0.0.1');  // Host del database
+define('DB_PORT', '3306');        // Porta (MySQL default: 3306)
+define('DB_NAME', '5AINC_FSL');  // Nome del database
+define('DB_USER', 'root');        // Utente MySQL
+define('DB_PASS', '');            // Password MySQL
 ```
 
-### PHP session settings (recommended for `php.ini`)
+### Impostazioni sessione PHP (consigliate in `php.ini`)
 
 ```ini
 session.use_cookies = 1
@@ -650,61 +650,61 @@ session.cookie_httponly = 1
 session.cookie_samesite = Lax
 ```
 
-These settings prevent session hijacking via JavaScript and cross-site request forgery.
+Queste impostazioni prevengono il session hijacking tramite JavaScript e il cross-site request forgery.
 
-### Theme default (`theme.js`)
+### Tema predefinito (`theme.js`)
 
 ```javascript
-var DEFAULT = 'global2.css';   // Aurora theme is the default
+var DEFAULT = 'global2.css';   // Il tema Aurora è il predefinito
 ```
 
-Change this to `'global.css'` (Classic) or `'global3.css'` (Brutale) to make a different theme the application default.
+Cambia in `'global.css'` (Classic) o `'global3.css'` (Brutale) per impostare un tema diverso come predefinito dell'applicazione.
 
 ---
 
-## Usage
+## Utilizzo
 
-### Navigating the Application
+### Navigazione nell'applicazione
 
-After login, the **dashboard** (`index.php`) shows six clickable cards — one for each module. The sidebar on the left provides persistent navigation to all sections.
+Dopo il login, la **dashboard** (`index.php`) mostra sei card cliccabili — una per ogni modulo. La barra laterale a sinistra fornisce navigazione persistente tra tutte le sezioni.
 
-**Sidebar sections:**
-- **Gestione** — Companies, Availability, Experiences
-- **Personale** — School Tutors, Company Tutors, Students
-- **Tema** — Switch between Classic, Aurora, and Brutale themes
+**Sezioni della barra laterale:**
+- **Gestione** — Aziende, Disponibilità, Esperienze
+- **Personale** — Tutor Scolastici, Tutor Aziendali, Studenti
+- **Tema** — Cambia tra Classic, Aurora e Brutale
 - **Sistema** — Logout
 
-### Working with Records
+### Lavorare con i record
 
-Every module page follows the same interaction pattern:
+Ogni pagina modulo segue lo stesso schema di interazione:
 
-1. **View** — Records load automatically into a table when the page opens.
-2. **Search** — Type in the search box to filter rows in real time (no page reload).
-3. **Paginate** — Use the ← → buttons to navigate between pages of results.
-4. **Create** — Click **+ Nuovo [record type]** to open a form modal. Fill in the fields and submit.
-5. **Edit** — Click the edit (pencil) button on any row. The same modal opens pre-filled with existing data.
-6. **Delete** — Click the delete (trash) button. A confirmation dialog appears before anything is deleted.
+1. **Visualizza** — I record si caricano automaticamente nella tabella all'apertura della pagina.
+2. **Cerca** — Digita nella casella di ricerca per filtrare le righe in tempo reale (nessun ricaricamento).
+3. **Pagina** — Usa i pulsanti ← → per navigare tra le pagine dei risultati.
+4. **Crea** — Clicca **+ Nuovo [tipo record]** per aprire una modale con il form. Compila i campi e invia.
+5. **Modifica** — Clicca il pulsante modifica (matita) su qualsiasi riga. La stessa modale si apre pre-compilata con i dati esistenti.
+6. **Elimina** — Clicca il pulsante elimina (cestino). Appare una finestra di conferma prima che venga eliminato qualsiasi dato.
 
-All operations show a **toast notification** in the top-right corner confirming success or reporting an error.
+Tutte le operazioni mostrano una **notifica toast** nell'angolo in alto a destra che conferma il successo o segnala un errore.
 
-### Responsive Use
+### Utilizzo su dispositivi mobili
 
-On screens narrower than 900 px (tablets and phones), the sidebar hides automatically. A hamburger menu button (☰) appears in the top-left corner to toggle it. The rest of the layout adapts to single-column.
+Su schermi più stretti di 900 px (tablet e smartphone), la barra laterale si nasconde automaticamente. Un pulsante a menu hamburger appare nell'angolo in alto a sinistra per mostrarla o nasconderla. Il resto del layout si adatta a colonna singola.
 
 ---
 
 ## Team
 
-| Group | Responsibility | Members |
+| Gruppo | Responsabilità | Componenti |
 |---|---|---|
-| **Gruppo 1** | Companies module, database connection (`config.php`) | — |
-| **Gruppo 2** | Availability module, unified API (`api.php`) | — |
-| **Gruppo 3** | Experiences module, global design system (`global.css`) | — |
-| **Gruppo 4** | Personnel module (tutors, students), session management | — |
+| **Gruppo 1** | Modulo aziende, connessione database (`config.php`) | — |
+| **Gruppo 2** | Modulo disponibilità, API unificata (`api.php`) | — |
+| **Gruppo 3** | Modulo esperienze, sistema di design globale (`global.css`) | — |
+| **Gruppo 4** | Modulo personale (tutor, studenti), gestione sessione | — |
 
-**Class:** 5AINC  
-**School year:** 2025/2026  
-**Design system:** Claude (Anthropic) — [claude.ai/code](https://claude.ai/code)
+**Classe:** 5AINC  
+**Anno scolastico:** 2025/2026  
+**Sistema di design:** Claude (Anthropic) — [claude.ai/code](https://claude.ai/code)
 
 ---
 
